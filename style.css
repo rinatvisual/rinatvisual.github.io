@@ -212,3 +212,13 @@ footer {
     font-size: 14px;
   }
     }
+/* ---------------- POSTER CARD (VERTICAL) ---------------- */
+
+.card--poster {
+  aspect-ratio: 3 / 4;
+  background: #0e0e0e;
+}
+
+.card--poster video {
+  object-fit: contain;
+}
