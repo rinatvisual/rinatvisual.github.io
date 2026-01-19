@@ -1,20 +1,17 @@
+/* ---------------- RESET ---------------- */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-:root {
-  --bg: #0f0f0f;
-  --text: #ffffff;
-  --muted: #9a9a9a;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
+html, body {
+  background: #0e0e0e;
+  color: #eaeaea;
   font-family: 'Inter', sans-serif;
-  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* ---------------- GRAIN ---------------- */
@@ -23,17 +20,155 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-  opacity: 0.05;
-  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  z-index: 1;
 }
 
-/* ---------------- REVEAL ---------------- */
+/* ---------------- BASIC LAYOUT ---------------- */
+
+header,
+section,
+footer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------------- HERO ---------------- */
+
+header h1 {
+  font-size: clamp(42px, 8vw, 72px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.role {
+  font-size: 18px;
+  opacity: 0.7;
+  margin-top: 12px;
+}
+
+.tagline {
+  display: block;
+  max-width: 520px;
+  margin-top: 24px;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+/* ---------------- ABOUT ---------------- */
+
+.about p {
+  max-width: 620px;
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.9;
+}
+
+.about p + p {
+  margin-top: 24px;
+}
+
+.tools {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* ---------------- PROJECTS ---------------- */
+
+.projects h2 {
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 48px;
+  opacity: 0.8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 48px 32px;
+}
+
+/* ---------------- WORK BLOCK ---------------- */
+
+.work {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---------------- CARD ---------------- */
+
+.card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #111;
+}
+
+.card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------------- CAPTION ---------------- */
+
+.caption {
+  font-size: 14px;
+  color: #bdbdbd;
+  line-height: 1.4;
+}
+
+.caption span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* ---------------- FOOTER ---------------- */
+
+footer {
+  padding-top: 120px;
+}
+
+.cta {
+  max-width: 520px;
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+.links {
+  margin-top: 32px;
+  font-size: 14px;
+}
+
+.links a {
+  color: #eaeaea;
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.links a:hover {
+  opacity: 1;
+}
+
+/* ---------------- REVEAL ANIMATION ---------------- */
 
 .reveal {
   opacity: 0;
-  transform: translateY(40px);
-  transition: 1s ease;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
 .reveal.active {
@@ -41,97 +176,39 @@ body {
   transform: translateY(0);
 }
 
-/* ---------------- HERO ---------------- */
+/* ---------------- MOBILE FIXES ---------------- */
 
-header {
-  padding: 120px 10% 100px;
-}
+@media (max-width: 768px) {
 
-header h1 {
-  font-size: clamp(48px, 8vw, 96px);
-  letter-spacing: -0.03em;
-}
+  header,
+  section,
+  footer {
+    padding: 56px 20px;
+  }
 
-.role {
-  color: var(--muted);
-  margin-top: 8px;
-}
+  .grid {
+    gap: 40px;
+  }
 
-.tagline {
-  display: block;
-  margin-top: 24px;
-  max-width: 520px;
-  font-size: 20px;
-  color: #e0e0e0;
-}
+  .cta {
+    font-size: 14px;
+    line-height: 1.5;
+  }
 
-/* ---------------- ABOUT ---------------- */
+  footer {
+    text-align: center;
+    padding-bottom: 64px;
+  }
 
-.about {
-  padding: 0 10% 140px;
-  max-width: 900px;
-}
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
 
-.tools {
-  margin-top: 32px;
-  font-size: 15px;
-  color: var(--muted);
-}
-
-/* ---------------- PROJECTS ---------------- */
-
-.projects {
-  padding: 0 10% 140px;
-}
-
-.projects h2 {
-  font-size: 28px;
-  margin-bottom: 48px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 48px;
-}
-
-/* ---------------- CARD ---------------- */
-
-.card {
-  background: #000;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  transition: transform 0.4s ease;
-  aspect-ratio: 16 / 9; /* ключевой момент */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card:hover {
-  transform: translateY(-8px);
-}
-
-/* ВАЖНО: поддержка вертикального видео */
-.card video {
-  width: auto;
-  height: 100%;
-  max-width: 100%;
-  display: block;
-  margin: 0 auto;
-  object-fit: contain;
-  background: #0f0f0f;
-}
-
-.card span {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px;
-  font-size: 13px;
-  opacity: 0.75;
-  background: linear-gradient(
-    to top,
-    r
+  .links a {
+    display: block;
+    font-size: 14px;
+  }
+    }
