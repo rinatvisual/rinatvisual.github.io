@@ -1,4 +1,4 @@
-const reveals = document.querySelectorAll('.reveal');
+const items = document.querySelectorAll('.reveal');
 
 const observer = new IntersectionObserver(
   entries => {
@@ -8,9 +8,7 @@ const observer = new IntersectionObserver(
       }
     });
   },
-  {
-    threshold: 0.15
-  }
+  { threshold: 0.15 }
 );
 
-reveals.forEach(el => observer.observe(el));
+items.forEach(el => observer.observe(el));
