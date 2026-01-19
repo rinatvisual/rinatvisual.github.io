@@ -4,58 +4,114 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Rinat — Motion Designer Portfolio</title>
-  <meta name="description" content="Rinat — Motion Designer. After Effects, 3D, UI Motion. Portfolio.">
-
-  <link rel="stylesheet" href="style.css" />
+  <title>Rinat — Motion Designer</title>
+  <meta name="description" content="Rinat — Motion Designer focused on promo, UI motion and visual storytelling.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <!-- cinematic grain -->
+  <div class="grain"></div>
+
+  <!-- HERO -->
   <header class="reveal">
     <h1>Rinat</h1>
-    <p>Motion Designer · After Effects · 3D</p>
+    <p class="role">Motion Designer</p>
+    <span class="tagline">
+      Creating clear, rhythmic and expressive motion for digital products
+    </span>
   </header>
 
+  <!-- ABOUT -->
   <section class="about reveal">
     <p>
-      Motion designer focused on animation, rhythm and visual storytelling.
-      I create promo, UI motion and cinematic visuals for digital products.
+      I’m a motion designer focused on timing, rhythm and visual clarity.
+      I work with promo animation, UI motion and 3D, helping brands and digital
+      products communicate ideas through motion.
+    </p>
+
+    <p class="tools">
+      <strong>Tools:</strong> After Effects · Blender · Illustrator · Photoshop · Premiere Pro<br>
+      <strong>Additional:</strong> Midjourney (concepts & visual exploration), AutoCAD
     </p>
   </section>
 
+  <!-- PROJECTS -->
   <section class="projects reveal">
     <h2>Selected Works</h2>
 
     <div class="grid">
+
       <div class="card reveal">
-        <img src="assets/motion/motion1.gif" alt="Promo animation">
-        <span>Promo Animation · After Effects</span>
+        <video
+          src="assets/motion/promo.mp4"
+          autoplay
+          loop
+          muted
+          playsinline
+        ></video>
+        <span>Promo animation focused on rhythm and brand energy</span>
       </div>
 
       <div class="card reveal">
-        <img src="assets/motion/motion2.gif" alt="UI motion">
-        <span>UI Motion · Figma / AE</span>
+        <video
+          src="assets/motion/ui-motion.mp4"
+          autoplay
+          loop
+          muted
+          playsinline
+        ></video>
+        <span>UI motion designed to improve hierarchy and user focus</span>
       </div>
 
       <div class="card reveal">
-        <img src="assets/images/3d1.jpg" alt="3D visual">
-        <span>3D Visual · Blender</span>
+        <video
+          src="assets/motion/3d-visual.mp4"
+          autoplay
+          loop
+          muted
+          playsinline
+        ></video>
+        <span>3D visual created to enhance depth and atmosphere</span>
       </div>
+
     </div>
   </section>
 
+  <!-- FOOTER -->
   <footer class="reveal">
-    <p>
-      Contact:
-      <a href="mailto:rinatshakirov05@gmail.com">Email</a> /
-      <a href="https://t.me/newrnt" target="_blank">Telegram</a> 
+    <p class="cta">
+      Available for junior / middle motion designer positions · Open to freelance and full-time opportunities
+    </p>
+
+    <p class="links">
+      <a href="mailto:rinat@email.com">Email</a>
+      <span>·</span>
+      <a href="https://t.me/username" target="_blank">Telegram</a>
+      <span>·</span>
+      <a href="https://behance.net/username" target="_blank">Behance</a>
     </p>
   </footer>
 
-  <script src="script.js"></script>
+  <script>
+    // simple reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
 </body>
 </html>
