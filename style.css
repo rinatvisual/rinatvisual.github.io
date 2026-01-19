@@ -238,3 +238,25 @@ footer {
   color: #d0d0d0;
   margin-bottom: 12px;
 }
+
+
+/* ---------------- CARD LINK ---------------- */
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card-link em {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* subtle hint it's clickable */
+.card-link:hover .card {
+  transform: translateY(-10px);
+}
