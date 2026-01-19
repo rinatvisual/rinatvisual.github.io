@@ -1,9 +1,4 @@
-:root {
-  --bg: #0e0e0e;
-  --text: #ffffff;
-  --muted: #b5b5b5;
-  --accent: #7c7cff;
-}
+/* ---------------- RESET ---------------- */
 
 * {
   margin: 0;
@@ -11,130 +6,36 @@
   box-sizing: border-box;
 }
 
+:root {
+  --bg: #0f0f0f;
+  --text: #ffffff;
+  --muted: #9a9a9a;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
+  font-family: 'Inter', sans-serif;
   line-height: 1.6;
 }
 
-/* ---------------- HEADER ---------------- */
+/* ---------------- GRAIN ---------------- */
 
-header {
-  padding: 80px 10%;
-}
-
-header h1 {
-  font-size: 64px;
-  font-weight: 600;
-}
-
-header p {
-  margin-top: 12px;
-  font-size: 18px;
-  color: var(--muted);
-}
-
-/* ---------------- ABOUT ---------------- */
-
-.about {
-  padding: 0 10% 100px;
-  max-width: 720px;
-  font-size: 18px;
-  color: #cfcfcf;
-}
-
-/* ---------------- PROJECTS ---------------- */
-
-.projects {
-  padding: 0 10% 100px;
-}
-
-.projects h2 {
-  font-size: 32px;
-  margin-bottom: 40px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-.card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 14px;
-  transition: transform 0.5s ease;
-}
-
-.card:hover {
-  transform: translateY(-6px);
-}
-
-.card img {
-  width: 100%;
-  display: block;
-  transition: transform 0.6s ease, opacity 0.6s ease;
-}
-
-.card:hover img {
-  transform: scale(1.05);
-  opacity: 0.85;
-}
-
-.card span {
-  position: absolute;
-  bottom: 16px;
-  left: 16px;
-  font-size: 14px;
-  opacity: 0.85;
-  z-index: 2;
-}
-
-/* Gradient overlay */
-.card::after {
-  content: "";
-  position: absolute;
+.grain {
+  pointer-events: none;
+  position: fixed;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.65),
-    rgba(0,0,0,0)
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  z-index: 9999;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.05;
 }
 
-.card:hover::after {
-  opacity: 1;
-}
-
-/* ---------------- FOOTER ---------------- */
-
-footer {
-  padding: 40px 10%;
-  border-top: 1px solid #222;
-  font-size: 14px;
-  color: #999;
-}
-
-footer a {
-  color: var(--accent);
-  text-decoration: none;
-  margin: 0 6px;
-}
-
-footer a:hover {
-  opacity: 0.7;
-}
-
-/* ---------------- SCROLL REVEAL ---------------- */
+/* ---------------- REVEAL ---------------- */
 
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(40px);
+  transition: opacity 1s ease, transform 1s ease;
 }
 
 .reveal.active {
@@ -142,27 +43,127 @@ footer a:hover {
   transform: translateY(0);
 }
 
-/* Cascade for cards */
-.card.reveal {
-  transition-delay: 0.1s;
+/* ---------------- HERO ---------------- */
+
+header {
+  padding: 120px 10% 100px;
 }
 
-.card.reveal:nth-child(2) {
-  transition-delay: 0.2s;
+header h1 {
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
-.card.reveal:nth-child(3) {
-  transition-delay: 0.3s;
+.role {
+  font-size: 18px;
+  color: var(--muted);
+  margin-top: 8px;
 }
 
-/* ---------------- RESPONSIVE ---------------- */
+.tagline {
+  display: block;
+  margin-top: 24px;
+  max-width: 520px;
+  font-size: 20px;
+  color: #e0e0e0;
+}
 
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 42px;
-  }
+/* ---------------- ABOUT ---------------- */
 
-  .projects h2 {
-    font-size: 26px;
-  }
+.about {
+  padding: 0 10% 140px;
+  max-width: 900px;
+}
+
+.about p {
+  font-size: 16px;
+  color: #d0d0d0;
+}
+
+.tools {
+  margin-top: 32px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.tools strong {
+  color: #ffffff;
+  font-weight: 400;
+}
+
+/* ---------------- PROJECTS ---------------- */
+
+.projects {
+  padding: 0 10% 140px;
+}
+
+.projects h2 {
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 48px;
+  letter-spacing: -0.02em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 48px;
+}
+
+/* ---------------- CARD ---------------- */
+
+.card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #000;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  transition: transform 0.4s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+}
+
+.card video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.card span {
+  display: block;
+  padding: 16px 4px 0;
+  font-size: 13px;
+  opacity: 0.75;
+  color: #dcdcdc;
+}
+
+/* ---------------- FOOTER ---------------- */
+
+footer {
+  padding: 0 10% 80px;
+}
+
+.cta {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #cfcfcf;
+}
+
+.links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.links span {
+  margin: 0 8px;
+  color: var(--muted);
+}
+
+.links a:hover {
+  color: var(--text);
 }
