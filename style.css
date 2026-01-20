@@ -102,7 +102,7 @@ header {
 
 /* promo poster smaller */
 .work--promo {
-  max-width: 360px;
+  max-width: 320px;
 }
 
 /* featured case */
@@ -111,7 +111,7 @@ header {
   cursor: pointer;
 }
 
-/* ---------------- CARD ---------------- */
+/* ---------------- CARD (GENERAL) ---------------- */
 
 .card {
   position: relative;
@@ -140,19 +140,25 @@ header {
   transition: transform 0.4s ease;
 }
 
-/* ---------------- PROMO POSTER (NO FRAME) ---------------- */
+/* ---------------- PROMO POSTER (NO FRAME, SOFT VIDEO) ---------------- */
 
 .card--poster {
   background: none;
   border-radius: 0;
   overflow: visible;
-  box-shadow: none;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: auto;
 }
 
 .card--poster video {
+  width: 100%;
+  height: auto;
+  display: block;
+
   object-fit: contain;
   background: transparent;
+
+  /* скругление именно у видео */
+  border-radius: 18px;
 }
 
 /* ---------------- BADGE ---------------- */
@@ -246,6 +252,10 @@ footer {
 
   .card {
     border-radius: 16px;
+  }
+
+  .card--poster video {
+    border-radius: 14px;
   }
 
   .caption {
