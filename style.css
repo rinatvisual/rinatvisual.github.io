@@ -24,12 +24,12 @@ html, body {
   z-index: 1;
 }
 
-/* ---------------- BASIC LAYOUT ---------------- */
+/* ---------------- LAYOUT ---------------- */
 
 header,
 section,
 footer {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 80px 24px;
   position: relative;
@@ -41,7 +41,6 @@ footer {
 header h1 {
   font-size: clamp(42px, 8vw, 72px);
   font-weight: 600;
-  letter-spacing: -0.02em;
 }
 
 .role {
@@ -65,7 +64,6 @@ header h1 {
   max-width: 620px;
   font-size: 16px;
   line-height: 1.7;
-  opacity: 0.9;
 }
 
 .about p + p {
@@ -81,27 +79,26 @@ header h1 {
 
 .projects h2 {
   font-size: 20px;
-  font-weight: 400;
   margin-bottom: 56px;
   opacity: 0.8;
 }
 
-/* ---------------- GRID ---------------- */
+/* ---------------- GRID (FEATURED) ---------------- */
 
-.grid {
+.grid--featured {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 64px 40px;
+  grid-template-columns: 0.8fr 1.6fr;
+  gap: 64px 48px;
 }
 
-/* ---------------- WORK BLOCK ---------------- */
+/* ---------------- WORK ---------------- */
 
 .work {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  text-decoration: none;
   color: inherit;
+  text-decoration: none;
 }
 
 /* ---------------- CARD ---------------- */
@@ -110,8 +107,8 @@ header h1 {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  overflow: hidden;
   border-radius: 18px;
+  overflow: hidden;
   background: #111;
   transition: transform 0.4s ease;
 }
@@ -120,10 +117,9 @@ header h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-/* ---------------- POSTER (PROMO) ---------------- */
+/* ---------------- PROMO SMALL ---------------- */
 
 .card--poster {
   aspect-ratio: 3 / 4;
@@ -134,33 +130,36 @@ header h1 {
   object-fit: contain;
 }
 
-/* ---------------- HIERARCHY ---------------- */
+.card--small {
+  max-width: 320px;
+}
 
-.work--promo {
-  max-width: 420px;
+/* ---------------- FEATURED ---------------- */
+
+.card--featured {
+  aspect-ratio: 16 / 9;
 }
 
 .work--featured {
-  grid-column: 1 / -1;
+  grid-column: 2 / 3;
   cursor: pointer;
 }
 
 .work--featured:hover .card {
-  transform: scale(1.01);
+  transform: scale(1.015);
 }
 
 /* ---------------- BADGE ---------------- */
 
 .badge {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  background: rgba(0, 0, 0, 0.6);
+  top: 18px;
+  left: 18px;
+  background: rgba(0,0,0,0.65);
   backdrop-filter: blur(6px);
-  padding: 6px 10px;
+  padding: 6px 12px;
   font-size: 12px;
   border-radius: 999px;
-  opacity: 0.85;
 }
 
 /* ---------------- CAPTION ---------------- */
@@ -168,7 +167,6 @@ header h1 {
 .caption {
   font-size: 14px;
   color: #bdbdbd;
-  line-height: 1.4;
 }
 
 .caption span {
@@ -187,7 +185,6 @@ footer {
   max-width: 520px;
   font-size: 15px;
   line-height: 1.6;
-  opacity: 0.85;
 }
 
 .links {
@@ -201,42 +198,22 @@ footer {
   text-decoration: none;
   font-size: 14px;
   opacity: 0.7;
-  transition: opacity 0.3s ease;
 }
 
 .links a:hover {
   opacity: 1;
 }
 
-/* ---------------- REVEAL ---------------- */
-
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.reveal.active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* ---------------- MOBILE ---------------- */
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
 
-  header,
-  section,
-  footer {
-    padding: 56px 20px;
-  }
-
-  .grid {
+  .grid--featured {
     grid-template-columns: 1fr;
     gap: 48px;
   }
 
-  .work--promo {
+  .card--small {
     max-width: 100%;
   }
 
@@ -246,18 +223,11 @@ footer {
 
   footer {
     text-align: center;
-    padding-bottom: 64px;
-  }
-
-  .cta {
-    font-size: 14px;
-    line-height: 1.5;
   }
 
   .links {
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    margin-top: 24px;
   }
 }
