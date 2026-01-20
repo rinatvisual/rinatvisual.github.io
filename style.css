@@ -6,99 +6,109 @@
   box-sizing: border-box;
 }
 
-html, body {
-  background: #0e0e0e;
-  color: #eaeaea;
+html {
+  scroll-behavior: smooth;
+}
+
+body {
   font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  background: #0f0f0f;
+  color: #eaeaea;
+  line-height: 1.6;
 }
 
-/* ---------------- GRAIN ---------------- */
+/* ---------------- GLOBAL ---------------- */
 
-.grain {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-  z-index: 1;
-}
-
-/* ---------------- LAYOUT ---------------- */
-
-header,
 section,
+header,
 footer {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 24px;
-  position: relative;
-  z-index: 2;
+  padding: 120px 24px;
+}
+
+h1 {
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 64px;
+}
+
+p {
+  font-size: 18px;
+  max-width: 720px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* ---------------- HERO ---------------- */
 
-header h1 {
-  font-size: clamp(42px, 8vw, 72px);
-  font-weight: 600;
+header {
+  padding-top: 160px;
 }
 
 .role {
-  font-size: 18px;
-  opacity: 0.7;
   margin-top: 12px;
+  font-size: 20px;
+  opacity: 0.7;
 }
 
 .tagline {
   display: block;
-  max-width: 520px;
   margin-top: 24px;
-  font-size: 16px;
-  line-height: 1.6;
-  opacity: 0.85;
+  font-size: 18px;
+  max-width: 560px;
+  opacity: 0.8;
 }
 
 /* ---------------- ABOUT ---------------- */
 
 .about p {
-  max-width: 620px;
-  font-size: 16px;
-  line-height: 1.7;
-}
-
-.about p + p {
-  margin-top: 24px;
+  margin-bottom: 32px;
 }
 
 .tools {
-  font-size: 14px;
-  opacity: 0.7;
+  font-size: 16px;
+  opacity: 0.75;
 }
 
 /* ---------------- PROJECTS ---------------- */
 
-.projects h2 {
-  font-size: 20px;
-  margin-bottom: 56px;
-  opacity: 0.8;
+.projects {
+  padding-top: 80px;
 }
 
-/* ---------------- GRID (FEATURED) ---------------- */
-
-.grid--featured {
+.grid {
   display: grid;
-  grid-template-columns: 0.8fr 1.6fr;
-  gap: 64px 48px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 72px 48px;
 }
 
-/* ---------------- WORK ---------------- */
+/* ---------------- WORK BLOCK ---------------- */
 
 .work {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  color: inherit;
-  text-decoration: none;
+  gap: 16px;
+}
+
+/* promo poster smaller */
+.work--promo {
+  max-width: 360px;
+}
+
+/* featured case */
+.work--featured {
+  grid-column: 1 / -1;
+  cursor: pointer;
 }
 
 /* ---------------- CARD ---------------- */
@@ -107,113 +117,126 @@ header h1 {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 18px;
+  background: #141414;
+  border-radius: 20px;
   overflow: hidden;
-  background: #111;
-  transition: transform 0.4s ease;
 }
 
 .card video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-/* ---------------- PROMO SMALL ---------------- */
+/* hover (desktop only) */
+@media (hover: hover) {
+  .work--featured:hover .card {
+    transform: scale(1.01);
+  }
+}
+
+.card {
+  transition: transform 0.4s ease;
+}
+
+/* ---------------- PROMO POSTER (NO FRAME) ---------------- */
 
 .card--poster {
+  background: none;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
   aspect-ratio: 3 / 4;
-  background: #0e0e0e;
 }
 
 .card--poster video {
   object-fit: contain;
-}
-
-.card--small {
-  max-width: 320px;
-}
-
-/* ---------------- FEATURED ---------------- */
-
-.card--featured {
-  aspect-ratio: 16 / 9;
-}
-
-.work--featured {
-  grid-column: 2 / 3;
-  cursor: pointer;
-}
-
-.work--featured:hover .card {
-  transform: scale(1.015);
+  background: transparent;
 }
 
 /* ---------------- BADGE ---------------- */
 
 .badge {
   position: absolute;
-  top: 18px;
-  left: 18px;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(6px);
+  top: 16px;
+  left: 16px;
   padding: 6px 12px;
   font-size: 12px;
   border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  opacity: 0.85;
 }
 
-/* ---------------- CAPTION ---------------- */
+/* ---------------- CAPTIONS ---------------- */
 
 .caption {
-  font-size: 14px;
-  color: #bdbdbd;
+  font-size: 16px;
+  line-height: 1.4;
+  opacity: 0.85;
 }
 
-.caption span {
+.caption .sub {
   display: block;
-  font-size: 12px;
-  opacity: 0.6;
+  margin-top: 6px;
+  font-size: 14px;
+  opacity: 0.65;
 }
 
 /* ---------------- FOOTER ---------------- */
 
 footer {
-  padding-top: 120px;
+  padding-bottom: 160px;
 }
 
 .cta {
-  max-width: 520px;
-  font-size: 15px;
-  line-height: 1.6;
+  margin-bottom: 32px;
+  font-size: 18px;
 }
 
 .links {
-  margin-top: 32px;
-  display: flex;
-  gap: 16px;
+  font-size: 16px;
 }
 
 .links a {
-  color: #eaeaea;
-  text-decoration: none;
-  font-size: 14px;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .links a:hover {
   opacity: 1;
 }
 
+/* ---------------- GRAIN ---------------- */
+
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  z-index: 999;
+}
+
 /* ---------------- MOBILE ---------------- */
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
 
-  .grid--featured {
-    grid-template-columns: 1fr;
-    gap: 48px;
+  section,
+  header,
+  footer {
+    padding: 80px 20px;
   }
 
-  .card--small {
+  h1 {
+    font-size: 42px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .work--promo {
     max-width: 100%;
   }
 
@@ -221,13 +244,15 @@ footer {
     grid-column: auto;
   }
 
-  footer {
-    text-align: center;
+  .card {
+    border-radius: 16px;
   }
 
-  .links {
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+  .caption {
+    font-size: 15px;
+  }
+
+  footer {
+    padding-bottom: 120px;
   }
 }
