@@ -1,23 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
   const videos = document.querySelectorAll("video");
 
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        const video = entry.target;
+
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    },
+    {
+      threshold: 0.5
+    }
+  );
+
   videos.forEach(video => {
     video.muted = true;
     video.playsInline = true;
-
-    const attemptPlay = video.play();
-
-    if (attemptPlay !== undefined) {
-      attemptPlay.catch(() => {
-        const resume = () => {
-          video.play();
-          document.removeEventListener("click", resume);
-          document.removeEventListener("touchstart", resume);
-        };
-
-        document.addEventListener("click", resume, { once: true });
-        document.addEventListener("touchstart", resume, { once: true });
-      });
-    }
+    video.preload = "metadata"; // ⬅️ КЛЮЧ
+    observer.observe(video);
   });
 });
