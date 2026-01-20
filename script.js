@@ -1,27 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
   const videos = document.querySelectorAll("video");
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach(entry => {
-        const video = entry.target;
-
-        if (entry.isIntersecting) {
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
-      });
-    },
-    {
-      threshold: 0.5
-    }
-  );
+  const isHoverCapable = window.matchMedia("(hover: hover)").matches;
 
   videos.forEach(video => {
     video.muted = true;
     video.playsInline = true;
-    video.preload = "metadata"; // ⬅️ КЛЮЧ
-    observer.observe(video);
+    video.preload = "metadata";
+    video.pause();
+
+    if (isHoverCapable) {
+      const parent = video.closest(".card") || video;
+
+      parent.addEventListener("mouseenter", () => {
+        video.play().catch(() => {});
+      });
+
+      parent.addEventListener("mouseleave", () => {
+        video.pause();
+        video.currentTime = 0;
+      });
+    }
   });
 });
