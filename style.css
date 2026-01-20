@@ -29,7 +29,7 @@ html, body {
 header,
 section,
 footer {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 80px 24px;
   position: relative;
@@ -82,14 +82,16 @@ header h1 {
 .projects h2 {
   font-size: 20px;
   font-weight: 400;
-  margin-bottom: 48px;
+  margin-bottom: 56px;
   opacity: 0.8;
 }
 
+/* ---------------- GRID (DESKTOP) ---------------- */
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 48px 32px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 64px 40px;
 }
 
 /* ---------------- WORK BLOCK ---------------- */
@@ -97,7 +99,7 @@ header h1 {
 .work {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   text-decoration: none;
   color: inherit;
 }
@@ -109,7 +111,7 @@ header h1 {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #111;
 }
 
@@ -118,6 +120,17 @@ header h1 {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* ---------------- POSTER CARD (VERTICAL PROMO) ---------------- */
+
+.card--poster {
+  aspect-ratio: 3 / 4;
+  background: #0e0e0e;
+}
+
+.card--poster video {
+  object-fit: contain;
 }
 
 /* ---------------- CAPTION ---------------- */
@@ -150,6 +163,8 @@ footer {
 .links {
   margin-top: 32px;
   font-size: 14px;
+  display: flex;
+  gap: 16px;
 }
 
 .links a {
@@ -186,13 +201,10 @@ footer {
     padding: 56px 20px;
   }
 
+  /* grid becomes single column */
   .grid {
-    gap: 40px;
-  }
-
-  .cta {
-    font-size: 14px;
-    line-height: 1.5;
+    grid-template-columns: 1fr;
+    gap: 48px;
   }
 
   footer {
@@ -200,25 +212,19 @@ footer {
     padding-bottom: 64px;
   }
 
+  .cta {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
   .links {
-    display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 12px;
     margin-top: 24px;
   }
 
   .links a {
-    display: block;
     font-size: 14px;
   }
-    }
-/* ---------------- POSTER CARD (VERTICAL) ---------------- */
-
-.card--poster {
-  aspect-ratio: 3 / 4;
-  background: #0e0e0e;
-}
-
-.card--poster video {
-  object-fit: contain;
 }
