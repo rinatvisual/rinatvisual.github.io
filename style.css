@@ -1,4 +1,6 @@
-/* ---------------- RESET ---------------- */
+/* ================================
+   RESET & BASE
+================================ */
 
 * {
   margin: 0;
@@ -6,8 +8,9 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html, body {
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -17,297 +20,217 @@ body {
   line-height: 1.6;
 }
 
-/* ---------------- GLOBAL ---------------- */
-
-section,
-header,
-footer {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 120px 24px;
-}
-
-h1 {
-  font-size: clamp(48px, 6vw, 72px);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-}
-
-h2 {
-  font-size: 32px;
-  font-weight: 500;
-  margin-bottom: 64px;
-}
-
-p {
-  font-size: 18px;
-  max-width: 720px;
-}
+/* ================================
+   GLOBAL ELEMENTS
+================================ */
 
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* ---------------- HERO ---------------- */
-
-header {
-  padding-top: 160px;
-}
-
-.role {
-  margin-top: 12px;
-  font-size: 20px;
-  opacity: 0.7;
-}
-
-.tagline {
+video {
   display: block;
-  margin-top: 24px;
-  font-size: 18px;
-  max-width: 560px;
-  opacity: 0.8;
-}
-
-/* ---------------- ABOUT ---------------- */
-
-.about p {
-  margin-bottom: 32px;
-}
-
-.tools {
-  font-size: 16px;
-  opacity: 0.75;
-}
-
-/* ---------------- PROJECTS ---------------- */
-
-.projects {
-  padding-top: 80px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 72px 48px;
-}
-
-/* ---------------- WORK BLOCK ---------------- */
-
-.work {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* promo poster smaller */
-.work--promo {
-  max-width: 320px;
-}
-
-/* featured case */
-.work--featured {
-  grid-column: 1 / -1;
-  cursor: pointer;
-}
-
-/* ---------------- CARD (GENERAL) ---------------- */
-
-.card {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #141414;
-  border-radius: 20px;
-  overflow: hidden;
-}
-
-.card video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* hover (desktop only) */
-@media (hover: hover) {
-  .work--featured:hover .card {
-    transform: scale(1.01);
-  }
-}
-
-.card {
-  transition: transform 0.4s ease;
-}
-
-/* ---------------- PROMO POSTER (NO FRAME, SOFT VIDEO) ---------------- */
-
-.card--poster {
-  background: none;
-  border-radius: 0;
-  overflow: visible;
-  aspect-ratio: auto;
-}
-
-.card--poster video {
   width: 100%;
   height: auto;
-  display: block;
-
-  object-fit: contain;
-  background: transparent;
-
-  /* скругление именно у видео */
-  border-radius: 18px;
+  background: #000;
 }
 
-/* ---------------- BADGE ---------------- */
-
-.badge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
-  opacity: 0.85;
-}
-
-/* ---------------- CAPTIONS ---------------- */
-
-.caption {
-  font-size: 16px;
-  line-height: 1.4;
-  opacity: 0.85;
-}
-
-.caption .sub {
-  display: block;
-  margin-top: 6px;
-  font-size: 14px;
-  opacity: 0.65;
-}
-
-/* ---------------- FOOTER ---------------- */
-
-footer {
-  padding-bottom: 160px;
-}
-
-.cta {
-  margin-bottom: 32px;
-  font-size: 18px;
-}
-
-.links {
-  font-size: 16px;
-}
-
-.links a {
-  opacity: 0.75;
-}
-
-.links a:hover {
-  opacity: 1;
-}
-
-/* ---------------- GRAIN ---------------- */
-
+/* Grain */
 .grain {
   pointer-events: none;
   position: fixed;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
-  z-index: 999;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  z-index: 0;
 }
 
-/* ---------------- MOBILE ---------------- */
+/* ================================
+   LANGUAGE SWITCH
+================================ */
+
+.lang-switch {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.lang-switch .active {
+  opacity: 1;
+  pointer-events: none;
+}
+
+.lang-switch a:hover {
+  opacity: 1;
+}
 
 @media (max-width: 768px) {
-
-  section,
-  header,
-  footer {
-    padding: 80px 20px;
-  }
-
-  h1 {
-    font-size: 42px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 56px;
-  }
-
-  .work--promo {
-    max-width: 100%;
-  }
-
-  .work--featured {
-    grid-column: auto;
-  }
-
-  .card {
-    border-radius: 16px;
-  }
-
-  .card--poster video {
-    border-radius: 14px;
-  }
-
-  .caption {
-    font-size: 15px;
-  }
-
-  footer {
-    padding-bottom: 120px;
+  .lang-switch {
+    top: 20px;
+    right: 20px;
+    font-size: 13px;
   }
 }
-/* -------- Featured case affordance -------- */
 
-.work--featured {
+/* ================================
+   HEADER
+================================ */
+
+header {
+  max-width: 960px;
+  margin: 140px auto 120px;
+  padding: 0 24px;
   position: relative;
 }
 
-.work--featured::after {
-  content: "View case →";
-  position: absolute;
-  right: 0;
-  bottom: -28px;
-  font-size: 14px;
-  opacity: 0.6;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+header h1 {
+  font-size: 56px;
+  font-weight: 400;
+  margin-bottom: 8px;
 }
+
+.role {
+  font-size: 18px;
+  opacity: 0.7;
+  margin-bottom: 24px;
+}
+
+.tagline {
+  max-width: 520px;
+  display: block;
+  font-size: 18px;
+  opacity: 0.85;
+}
+
+/* ================================
+   ABOUT
+================================ */
+
+.about {
+  max-width: 720px;
+  margin: 0 auto 140px;
+  padding: 0 24px;
+}
+
+.about p {
+  margin-bottom: 24px;
+  opacity: 0.85;
+}
+
+.tools {
+  font-size: 14px;
+  opacity: 0.65;
+}
+
+/* ================================
+   PROJECT GRID
+================================ */
+
+.projects {
+  max-width: 1200px;
+  margin: 0 auto 160px;
+  padding: 0 24px;
+}
+
+.projects h2 {
+  font-size: 22px;
+  margin-bottom: 48px;
+  font-weight: 400;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+
+.work,
+.card-link {
+  display: block;
+}
+
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+}
+
+.card video {
+  object-fit: cover;
+}
+
+.caption {
+  margin-top: 14px;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+/* Featured case */
+
+.work--featured .card {
+  outline: 1px solid rgba(255,255,255,0.12);
+}
+
+.work--featured .caption em {
+  display: block;
+  margin-top: 4px;
+  opacity: 0.6;
+  font-style: normal;
+}
+
+/* Hover */
 
 @media (hover: hover) {
-  .work--featured:hover::after {
-    opacity: 1;
-    transform: translateX(4px);
-  }
-
-  .work--featured:hover .card {
+  .card:hover {
     transform: scale(1.015);
+    transition: transform 0.3s ease;
   }
 }
-/* -------- Case page layout -------- */
+
+/* ================================
+   FOOTER
+================================ */
+
+footer {
+  max-width: 960px;
+  margin: 0 auto 120px;
+  padding: 0 24px;
+}
+
+.cta {
+  font-size: 15px;
+  opacity: 0.75;
+  margin-bottom: 16px;
+}
+
+.links {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+/* ================================
+   CASE PAGE
+================================ */
 
 .case-header {
   max-width: 960px;
-  margin: 120px auto 80px;
+  margin: 140px auto 80px;
   padding: 0 24px;
 }
 
 .case-header h1 {
-  font-size: 42px;
+  font-size: 44px;
   margin-bottom: 12px;
 }
 
 .case-subtitle {
   opacity: 0.7;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .case-award {
@@ -319,104 +242,44 @@ footer {
   opacity: 0.6;
 }
 
-/* -------- Video centering fix -------- */
-
-.case-video {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 80px;
-  padding: 0 24px;
-}
-
-.video-wrapper {
-  width: 100%;
-  max-width: 1200px; /* важно */
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 16px;
-}
-
-.video-wrapper video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* НЕ cover */
-  display: block;
-}
-
-/* -------- Text -------- */
-
-.case-description {
-  max-width: 720px;
-  margin: 0 auto 120px;
-  padding: 0 24px;
-  line-height: 1.7;
-  opacity: 0.85;
-}
-
-/* -------- Back link -------- */
-
 .back {
   display: inline-block;
   margin-bottom: 32px;
   font-size: 14px;
   opacity: 0.6;
-  text-decoration: none;
 }
 
 .back:hover {
   opacity: 1;
 }
 
-/* -------- Mobile -------- */
+/* Video */
 
-@media (max-width: 768px) {
-  .case-header h1 {
-    font-size: 32px;
-  }
-
-  .case-video {
-    margin-bottom: 48px;
-  }
-}
-/* -------- Language switch -------- */
-
-.lang-switch {
-  position: absolute;
-  top: 32px;
-  right: 32px;
-  font-size: 14px;
+.case-video {
   display: flex;
-  gap: 8px;
-  opacity: 0.6;
+  justify-content: center;
+  margin-bottom: 96px;
+  padding: 0 24px;
 }
 
-.lang-switch a {
-  text-decoration: none;
-  color: inherit;
+.video-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
-.lang-switch a:hover {
-  opacity: 1;
+.video-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.lang-switch .active {
-  opacity: 1;
-  pointer-events: none;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .lang-switch {
-    top: 20px;
-    right: 20px;
-    font-size: 13px;
-  }
-}
 /* ================================
-   CASE TEXT LAYOUT FIX
+   CASE TEXT (FIXED)
 ================================ */
 
-/* Общая ширина кейса */
 .case-description,
 .case-details,
 .case-final {
@@ -426,23 +289,17 @@ footer {
   padding: 0 24px;
 }
 
-/* Описание под видео */
 .case-description {
   margin-bottom: 96px;
 }
 
 .case-description p {
   margin-bottom: 24px;
-  line-height: 1.7;
   font-size: 16px;
+  line-height: 1.7;
   opacity: 0.85;
 }
 
-.case-description p:last-child {
-  margin-bottom: 0;
-}
-
-/* DETAILS GRID */
 .case-details {
   margin-bottom: 96px;
 }
@@ -454,7 +311,7 @@ footer {
 }
 
 .details-grid h3 {
-  font-size: 14px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 12px;
@@ -467,9 +324,8 @@ footer {
   opacity: 0.85;
 }
 
-/* Финальный абзац */
 .case-final {
-  margin-bottom: 120px;
+  margin-bottom: 140px;
 }
 
 .case-final p {
@@ -478,15 +334,19 @@ footer {
   opacity: 0.7;
 }
 
-/* ----------------
-   Mobile
----------------- */
+/* ================================
+   MOBILE
+================================ */
 
 @media (max-width: 768px) {
-  .case-description,
-  .case-details,
-  .case-final {
-    max-width: 100%;
+
+  header h1 {
+    font-size: 40px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 56px;
   }
 
   .details-grid {
@@ -494,12 +354,8 @@ footer {
     gap: 40px;
   }
 
-  .case-description {
-    margin-bottom: 64px;
+  .case-header h1 {
+    font-size: 32px;
   }
 
-  .case-details {
-    margin-bottom: 64px;
-  }
 }
-
