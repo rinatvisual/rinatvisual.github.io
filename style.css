@@ -1,219 +1,361 @@
-/* Reset */
+/* ================================
+   RESET & BASE
+================================ */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Base */
 html, body {
-  background: #0e0e0e; /* тёмная тема */
-  color: #f2f2f2;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
   font-family: 'Inter', sans-serif;
+  background: #0f0f0f;
+  color: #eaeaea;
+  line-height: 1.6;
+}
+
+/* ================================
+   GLOBAL ELEMENTS
+================================ */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
 }
 
 /* Grain */
 .grain {
+  pointer-events: none;
   position: fixed;
   inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  z-index: 0;
 }
 
-/* Layout */
-header, section, footer {
-  position: relative;
-  z-index: 2;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 96px 24px;
-}
+/* ================================
+   LANGUAGE SWITCH
+================================ */
 
-/* Header */
-header h1 {
-  font-size: 40px;
-  font-weight: 600;
-}
-
-.role {
-  margin-top: 8px;
-  font-size: 18px;
+.lang-switch {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
   opacity: 0.6;
 }
 
-.tagline {
-  display: block;
-  margin-top: 24px;
-  max-width: 520px;
-  font-size: 16px;
-  line-height: 1.6;
-  opacity: 0.7;
+.lang-switch .active {
+  opacity: 1;
+  pointer-events: none;
 }
 
-/* About */
-.about p {
-  max-width: 640px;
+.lang-switch a:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .lang-switch {
+    top: 20px;
+    right: 20px;
+    font-size: 13px;
+  }
+}
+
+/* ================================
+   HEADER
+================================ */
+
+header {
+  max-width: 960px;
+  margin: 140px auto 120px;
+  padding: 0 24px;
+  position: relative;
+}
+
+header h1 {
+  font-size: 56px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.role {
+  font-size: 18px;
+  opacity: 0.7;
   margin-bottom: 24px;
-  line-height: 1.7;
+}
+
+.tagline {
+  max-width: 520px;
+  display: block;
+  font-size: 18px;
+  opacity: 0.85;
+}
+
+/* ================================
+   ABOUT
+================================ */
+
+.about {
+  max-width: 720px;
+  margin: 0 auto 140px;
+  padding: 0 24px;
+}
+
+.about p {
+  margin-bottom: 24px;
   opacity: 0.85;
 }
 
 .tools {
   font-size: 14px;
-  opacity: 0.6;
-}
-
-/* Projects */
-.projects h2 {
-  font-size: 22px;
-  margin-bottom: 48px;
-}
-
-/* Grid */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 56px 40px;
-  align-items: start;
-}
-
-/* Card base */
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* Video */
-.card video {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 18px;
-  background: #000;
-}
-
-/* Text */
-.card span {
-  font-size: 14px;
-  line-height: 1.5;
   opacity: 0.65;
 }
 
-.card span em {
-  font-style: normal;
-  opacity: 0.5;
+/* ================================
+   PROJECT GRID
+================================ */
+
+.projects {
+  max-width: 1200px;
+  margin: 0 auto 160px;
+  padding: 0 24px;
 }
 
-/* -------------------------------
-   MAIN CASE — FULL WIDTH
--------------------------------- */
+.projects h2 {
+  font-size: 22px;
+  margin-bottom: 48px;
+  font-weight: 400;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+
+.work,
 .card-link {
-  grid-column: 1 / -1; /* занимает всю ширину */
-  text-decoration: none;
-  color: inherit;
-}
-
-.card-link .card {
-  gap: 18px;
-}
-
-.card-link .card video {
-  border-radius: 22px;
-}
-
-.card-link .card span {
-  max-width: 680px;
-  font-size: 15px;
-  opacity: 0.9;
-}
-
-/* View case label */
-.card-link .card span::after {
-  content: "View case →";
   display: block;
-  margin-top: 12px;
-  font-size: 13px;
-  letter-spacing: 0.04em;
+}
+
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+}
+
+.card video {
+  object-fit: cover;
+}
+
+.caption {
+  margin-top: 14px;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+/* Featured case */
+
+.work--featured .card {
+  outline: 1px solid rgba(255,255,255,0.12);
+}
+
+.work--featured .caption em {
+  display: block;
+  margin-top: 4px;
   opacity: 0.6;
-  transition: opacity 0.3s ease;
+  font-style: normal;
 }
 
-.card-link:hover .card span::after {
-  opacity: 1;
+/* Hover */
+
+@media (hover: hover) {
+  .card:hover {
+    transform: scale(1.015);
+    transition: transform 0.3s ease;
+  }
 }
 
-/* --------------------------------
-   LAST TWO VIDEOS — SIDE BY SIDE, TEXT BELOW
--------------------------------- */
-.two-videos {
-  display: flex;
-  gap: 40px;
-}
+/* ================================
+   FOOTER
+================================ */
 
-.two-videos .half {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.two-videos .half video {
-  width: 100%;
-  border-radius: 18px;
-}
-
-.two-videos .half span {
-  text-align: center;
-  margin-top: 8px;
-  opacity: 0.7;
-}
-
-/* Footer */
 footer {
-  padding-top: 64px;
-  padding-bottom: 64px;
+  max-width: 960px;
+  margin: 0 auto 120px;
+  padding: 0 24px;
 }
 
 .cta {
-  max-width: 520px;
-  margin-bottom: 24px;
   font-size: 15px;
   opacity: 0.75;
+  margin-bottom: 16px;
 }
 
-.links a {
-  color: inherit;
-  text-decoration: none;
+.links {
+  font-size: 14px;
   opacity: 0.6;
 }
 
-.links a:hover {
+/* ================================
+   CASE PAGE
+================================ */
+
+.case-header {
+  max-width: 960px;
+  margin: 140px auto 80px;
+  padding: 0 24px;
+}
+
+.case-header h1 {
+  font-size: 44px;
+  margin-bottom: 12px;
+}
+
+.case-subtitle {
+  opacity: 0.7;
+  margin-bottom: 20px;
+}
+
+.case-award {
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.case-award span {
+  opacity: 0.6;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 32px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.back:hover {
   opacity: 1;
 }
 
-/* Mobile */
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 48px;
-  }
+/* Video */
 
-  .card-link {
-    grid-column: auto;
-  }
+.case-video {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 96px;
+  padding: 0 24px;
+}
 
-  .two-videos {
-    flex-direction: column;
-  }
+.video-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+}
 
-  header,
-  section,
-  footer {
-    padding: 64px 20px;
-  }
+.video-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ================================
+   CASE TEXT (FIXED)
+================================ */
+
+.case-description,
+.case-details,
+.case-final {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 24px;
+}
+
+.case-description {
+  margin-bottom: 96px;
+}
+
+.case-description p {
+  margin-bottom: 24px;
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+.case-details {
+  margin-bottom: 96px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px 64px;
+}
+
+.details-grid h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.details-grid p {
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+.case-final {
+  margin-bottom: 140px;
+}
+
+.case-final p {
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.7;
+}
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 768px) {
 
   header h1 {
+    font-size: 40px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .case-header h1 {
     font-size: 32px;
   }
-}
+
+  }
