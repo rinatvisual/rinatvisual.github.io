@@ -21,7 +21,7 @@ html, body {
   z-index: 1;
 }
 
-/* Layout blocks */
+/* Layout */
 header,
 section,
 footer {
@@ -76,11 +76,11 @@ header h1 {
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 48px 40px;
+  gap: 56px 40px;
   align-items: start;
 }
 
-/* Card */
+/* Card base */
 .card {
   display: flex;
   flex-direction: column;
@@ -92,11 +92,11 @@ header h1 {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #000;
 }
 
-/* Text under cards */
+/* Text */
 .card span {
   font-size: 14px;
   line-height: 1.5;
@@ -109,30 +109,33 @@ header h1 {
 }
 
 /* -------------------------------
-   MAIN CASE (LENINGRAD) ACCENT
+   MAIN CASE — FULL WIDTH
 -------------------------------- */
 
-/* Ссылка не подчёркивается */
 .card-link {
+  grid-column: 1 / -1; /* занимает всю ширину сетки */
   text-decoration: none;
   color: inherit;
 }
 
-/* Главный кейс — чуть больше визуальный вес */
+.card-link .card {
+  gap: 18px;
+}
+
 .card-link .card video {
-  outline: 1px solid rgba(255, 255, 255, 0.08);
-  transition: transform 0.4s ease, outline-color 0.4s ease;
+  border-radius: 22px;
 }
 
-/* Hover — мягкий, студийный */
-.card-link:hover .card video {
-  transform: scale(0.98);
-  outline-color: rgba(255, 255, 255, 0.25);
-}
-
-/* Подпись главного кейса — чуть ярче */
 .card-link .card span {
+  max-width: 640px;
+  font-size: 15px;
   opacity: 0.85;
+}
+
+/* Hover — аккуратный */
+.card-link:hover .card video {
+  transform: scale(0.99);
+  transition: transform 0.4s ease;
 }
 
 /* Footer */
@@ -164,6 +167,10 @@ footer {
   .grid {
     grid-template-columns: 1fr;
     gap: 48px;
+  }
+
+  .card-link {
+    grid-column: auto;
   }
 
   header,
