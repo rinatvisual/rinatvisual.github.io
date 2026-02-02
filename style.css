@@ -7,7 +7,7 @@
 
 /* Base */
 html, body {
-  background: #0e0e0e;
+  background: #0e0e0e; /* тёмная тема */
   color: #f2f2f2;
   font-family: 'Inter', sans-serif;
 }
@@ -17,14 +17,12 @@ html, body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   z-index: 1;
 }
 
 /* Layout */
-header,
-section,
-footer {
+header, section, footer {
   position: relative;
   z-index: 2;
   max-width: 1100px;
@@ -108,7 +106,7 @@ header h1 {
   opacity: 0.5;
 }
 
-/* --------------------------------
+/* -------------------------------
    MAIN CASE — FULL WIDTH
 -------------------------------- */
 .card-link {
@@ -147,13 +145,11 @@ header h1 {
 }
 
 /* --------------------------------
-   LAST TWO VIDEOS — HALF WIDTH SIDE BY SIDE
+   LAST TWO VIDEOS — SIDE BY SIDE, TEXT BELOW
 -------------------------------- */
-
-/* 3-й и 4-й элементы сетки */
 .grid > .card:nth-child(3),
 .grid > .card:nth-child(4) {
-  grid-column: span 3; /* занимают всю строку grid */
+  grid-column: 1 / -1; /* занимает всю строку сетки */
   display: grid;
   grid-template-columns: 1fr 1fr; /* два видео рядом */
   gap: 40px;
@@ -161,12 +157,16 @@ header h1 {
 
 .grid > .card:nth-child(3) .card,
 .grid > .card:nth-child(4) .card {
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.grid > .card:nth-child(3) video,
-.grid > .card:nth-child(4) video {
-  border-radius: 18px;
+.grid > .card:nth-child(3) .card span,
+.grid > .card:nth-child(4) .card span {
+  text-align: center;
+  margin-top: 4px;
+  opacity: 0.7;
 }
 
 /* Mobile */
