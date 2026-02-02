@@ -147,26 +147,49 @@ header h1 {
 /* --------------------------------
    LAST TWO VIDEOS — SIDE BY SIDE, TEXT BELOW
 -------------------------------- */
-/* делаем 2 колонки для последних двух видео */
-.grid > .card:nth-child(3),
-.grid > .card:nth-child(4) {
-  grid-column: span 3; /* занимаем всю ширину grid */
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.two-videos {
+  display: flex;
   gap: 40px;
 }
 
-/* каждая видео + подпись */
-.grid > .card:nth-child(3) video,
-.grid > .card:nth-child(4) video {
+.two-videos .half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.two-videos .half video {
+  width: 100%;
   border-radius: 18px;
 }
 
-.grid > .card:nth-child(3) span,
-.grid > .card:nth-child(4) span {
+.two-videos .half span {
   text-align: center;
   margin-top: 8px;
   opacity: 0.7;
+}
+
+/* Footer */
+footer {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.cta {
+  max-width: 520px;
+  margin-bottom: 24px;
+  font-size: 15px;
+  opacity: 0.75;
+}
+
+.links a {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.6;
+}
+
+.links a:hover {
+  opacity: 1;
 }
 
 /* Mobile */
@@ -180,9 +203,8 @@ header h1 {
     grid-column: auto;
   }
 
-  .grid > .card:nth-child(3),
-  .grid > .card:nth-child(4) {
-    grid-template-columns: 1fr; /* складываем в колонку на мобилке */
+  .two-videos {
+    flex-direction: column;
   }
 
   header,
