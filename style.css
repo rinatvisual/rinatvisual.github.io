@@ -292,3 +292,89 @@ footer {
     transform: scale(1.015);
   }
 }
+/* -------- Case page layout -------- */
+
+.case-header {
+  max-width: 960px;
+  margin: 120px auto 80px;
+  padding: 0 24px;
+}
+
+.case-header h1 {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.case-subtitle {
+  opacity: 0.7;
+  margin-bottom: 24px;
+}
+
+.case-award {
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.case-award span {
+  opacity: 0.6;
+}
+
+/* -------- Video centering fix -------- */
+
+.case-video {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 80px;
+  padding: 0 24px;
+}
+
+.video-wrapper {
+  width: 100%;
+  max-width: 1200px; /* важно */
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.video-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* НЕ cover */
+  display: block;
+}
+
+/* -------- Text -------- */
+
+.case-description {
+  max-width: 720px;
+  margin: 0 auto 120px;
+  padding: 0 24px;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+/* -------- Back link -------- */
+
+.back {
+  display: inline-block;
+  margin-bottom: 32px;
+  font-size: 14px;
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.back:hover {
+  opacity: 1;
+}
+
+/* -------- Mobile -------- */
+
+@media (max-width: 768px) {
+  .case-header h1 {
+    font-size: 32px;
+  }
+
+  .case-video {
+    margin-bottom: 48px;
+  }
+}
