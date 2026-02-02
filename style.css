@@ -110,7 +110,7 @@ header h1 {
    MAIN CASE — FULL WIDTH
 -------------------------------- */
 .card-link {
-  grid-column: 1 / -1;
+  grid-column: 1 / -1; /* занимает всю ширину */
   text-decoration: none;
   color: inherit;
 }
@@ -147,25 +147,25 @@ header h1 {
 /* --------------------------------
    LAST TWO VIDEOS — SIDE BY SIDE, TEXT BELOW
 -------------------------------- */
+/* делаем 2 колонки для последних двух видео */
 .grid > .card:nth-child(3),
 .grid > .card:nth-child(4) {
-  grid-column: 1 / -1; /* занимает всю строку сетки */
+  grid-column: span 3; /* занимаем всю ширину grid */
   display: grid;
-  grid-template-columns: 1fr 1fr; /* два видео рядом */
+  grid-template-columns: 1fr 1fr;
   gap: 40px;
 }
 
-.grid > .card:nth-child(3) .card,
-.grid > .card:nth-child(4) .card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* каждая видео + подпись */
+.grid > .card:nth-child(3) video,
+.grid > .card:nth-child(4) video {
+  border-radius: 18px;
 }
 
-.grid > .card:nth-child(3) .card span,
-.grid > .card:nth-child(4) .card span {
+.grid > .card:nth-child(3) span,
+.grid > .card:nth-child(4) span {
   text-align: center;
-  margin-top: 4px;
+  margin-top: 8px;
   opacity: 0.7;
 }
 
@@ -182,7 +182,7 @@ header h1 {
 
   .grid > .card:nth-child(3),
   .grid > .card:nth-child(4) {
-    grid-template-columns: 1fr; /* в одну колонку на мобилке */
+    grid-template-columns: 1fr; /* складываем в колонку на мобилке */
   }
 
   header,
