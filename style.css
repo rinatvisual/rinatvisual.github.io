@@ -412,4 +412,94 @@ footer {
     font-size: 13px;
   }
 }
+/* ================================
+   CASE TEXT LAYOUT FIX
+================================ */
+
+/* Общая ширина кейса */
+.case-description,
+.case-details,
+.case-final {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 24px;
+}
+
+/* Описание под видео */
+.case-description {
+  margin-bottom: 96px;
+}
+
+.case-description p {
+  margin-bottom: 24px;
+  line-height: 1.7;
+  font-size: 16px;
+  opacity: 0.85;
+}
+
+.case-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* DETAILS GRID */
+.case-details {
+  margin-bottom: 96px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px 64px;
+}
+
+.details-grid h3 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.details-grid p {
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+/* Финальный абзац */
+.case-final {
+  margin-bottom: 120px;
+}
+
+.case-final p {
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.7;
+}
+
+/* ----------------
+   Mobile
+---------------- */
+
+@media (max-width: 768px) {
+  .case-description,
+  .case-details,
+  .case-final {
+    max-width: 100%;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .case-description {
+    margin-bottom: 64px;
+  }
+
+  .case-details {
+    margin-bottom: 64px;
+  }
+}
 
