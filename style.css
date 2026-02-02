@@ -359,3 +359,33 @@ footer {
   }
 
 }
+/* ================================
+   PROMO POSTER (FIX)
+================================ */
+
+.work--poster {
+  max-width: 360px;
+}
+
+.poster-card {
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.poster-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Desktop positioning */
+@media (min-width: 1024px) {
+  .grid {
+    align-items: start;
+  }
+
+  .work--poster {
+    grid-column: 1 / 2;
+  }
+}
