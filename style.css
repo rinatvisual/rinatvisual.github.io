@@ -378,3 +378,38 @@ footer {
     margin-bottom: 48px;
   }
 }
+/* -------- Language switch -------- */
+
+.lang-switch {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  opacity: 0.6;
+}
+
+.lang-switch a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.lang-switch a:hover {
+  opacity: 1;
+}
+
+.lang-switch .active {
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .lang-switch {
+    top: 20px;
+    right: 20px;
+    font-size: 13px;
+  }
+}
+
