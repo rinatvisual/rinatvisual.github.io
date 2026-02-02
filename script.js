@@ -1,24 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
   const videos = document.querySelectorAll("video");
 
-  const isHoverCapable = window.matchMedia("(hover: hover)").matches;
-
   videos.forEach(video => {
     video.muted = true;
     video.playsInline = true;
     video.preload = "metadata";
-    video.pause();
 
-    if (isHoverCapable) {
-      const parent = video.closest(".card") || video;
+    const playPromise = video.play();
 
-      parent.addEventListener("mouseenter", () => {
-        video.play().catch(() => {});
-      });
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        const resume = () => {
+          video.play().catch(() => {});
+          document.removeEventListener("click", resume);
+          document.removeEventListener("touchstart", resume);
+        };
 
-      parent.addEventListener("mouseleave", () => {
-        video.pause();
-        video.currentTime = 0;
+        document.addEventListener("click", resume, { once: true });
+        document.addEventListener("touchstart", resume, { once: true });
       });
     }
   });
