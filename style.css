@@ -266,3 +266,29 @@ footer {
     padding-bottom: 120px;
   }
 }
+/* -------- Featured case affordance -------- */
+
+.work--featured {
+  position: relative;
+}
+
+.work--featured::after {
+  content: "View case →";
+  position: absolute;
+  right: 0;
+  bottom: -28px;
+  font-size: 14px;
+  opacity: 0.6;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+@media (hover: hover) {
+  .work--featured:hover::after {
+    opacity: 1;
+    transform: translateX(4px);
+  }
+
+  .work--featured:hover .card {
+    transform: scale(1.015);
+  }
+}
