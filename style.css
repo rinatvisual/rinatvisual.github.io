@@ -111,7 +111,6 @@ header h1 {
 /* --------------------------------
    MAIN CASE — FULL WIDTH
 -------------------------------- */
-
 .card-link {
   grid-column: 1 / -1;
   text-decoration: none;
@@ -148,21 +147,26 @@ header h1 {
 }
 
 /* --------------------------------
-   LAST TWO VIDEOS — HALF + HALF
+   LAST TWO VIDEOS — HALF WIDTH SIDE BY SIDE
 -------------------------------- */
 
-/* 3-й и 4-й элементы сетки (после главного кейса) */
+/* 3-й и 4-й элементы сетки */
 .grid > .card:nth-child(3),
 .grid > .card:nth-child(4) {
-  grid-column: span 3;
+  grid-column: span 3; /* занимают всю строку grid */
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* два видео рядом */
+  gap: 40px;
 }
 
-/* Внутренняя сетка 50 / 50 */
-.grid > .card:nth-child(3),
-.grid > .card:nth-child(4) {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
+.grid > .card:nth-child(3) .card,
+.grid > .card:nth-child(4) .card {
+  margin: 0;
+}
+
+.grid > .card:nth-child(3) video,
+.grid > .card:nth-child(4) video {
+  border-radius: 18px;
 }
 
 /* Mobile */
@@ -178,7 +182,7 @@ header h1 {
 
   .grid > .card:nth-child(3),
   .grid > .card:nth-child(4) {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* в одну колонку на мобилке */
   }
 
   header,
