@@ -183,6 +183,7 @@
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+  .ver { color: #5e4c43; font-size: 12px; text-align: center; margin: 36px 0 0; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -258,6 +259,7 @@
     <h2 id="h-history">Прошлые кадры</h2>
     <div class="history" id="history"></div>
   </section>
+  <p class="ver" id="ver"></p>
 </main>
 
 <div class="fallback" id="fallback" hidden><button type="button" id="go">Проявить кадр</button></div>
@@ -470,20 +472,15 @@ function submit() {
     alertMsg("Студия открыта не той кнопкой. Закройте её и откройте кнопкой «🎞 Открыть студию» под полем ввода в чате с ботом (если её нет — отправьте боту /app).");
     return;
   }
-  try { tg.MainButton.showProgress(); } catch (e) {}
-  // сохраняем историю (не дольше 1,5 с), затем отправляем кадр в бота
-  store.get((list) => {
-    store.set([prompt, ...list.filter((x) => x !== prompt)].slice(0, 8));
-    setTimeout(() => {
-      try { if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
-      try {
-        tg.sendData(JSON.stringify(payload));
-      } catch (e) {
-        try { tg.MainButton.hideProgress(); } catch (x) {}
-        alertMsg("Не удалось отправить кадр в бота: " + e.message + ". Откройте студию кнопкой «🎞 Открыть студию» под полем ввода (команда /app).");
-      }
-    }, 300);
-  });
+  // история — без ожидания, затем сразу отправка в бота
+  historyList = [prompt, ...historyList.filter((x) => x !== prompt)].slice(0, 8);
+  store.set(historyList);
+  try { if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+  try {
+    tg.sendData(JSON.stringify(payload));
+  } catch (e) {
+    alertMsg("Не удалось отправить кадр в бота: " + e.message + ". Откройте студию кнопкой «🎞 Открыть студию» под полем ввода (команда /app).");
+  }
 }
 
 /* запуск */
@@ -498,7 +495,9 @@ if (inTelegram) {
   $("go").onclick = submit;
 }
 render();
-store.get(drawHistory);
+let historyList = [];
+store.get((list) => { historyList = list; drawHistory(list); });
+$("ver").textContent = "Студия v3" + (inTelegram ? " · " + tg.platform + " · Telegram " + tg.version : " · предпросмотр");
 </script>
 </body>
 </html>
