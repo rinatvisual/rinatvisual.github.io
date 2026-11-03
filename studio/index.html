@@ -265,7 +265,9 @@
 
 <script>
 const tg = window.Telegram && window.Telegram.WebApp;
-const inTelegram = !!(tg && tg.initData);
+const inTelegram = !!(tg && tg.platform && tg.platform !== "unknown");
+const canCloud = inTelegram && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9");
+function alertMsg(text) { if (inTelegram && tg.showAlert) { try { tg.showAlert(text); return; } catch (e) {} } toast(text); }
 
 const CHIPS = [
   ["Живая кожа", ", visible skin pores and natural imperfections, no makeup"],
@@ -317,22 +319,26 @@ const promptEl = $("prompt");
 /* хранение истории: облако Telegram или память браузера */
 const store = {
   get(cb) {
-    if (inTelegram && tg.CloudStorage) {
-      tg.CloudStorage.getItem("history", (e, v) => cb(e ? [] : safeParse(v)));
-    } else {
-      try { cb(safeParse(localStorage.getItem("history"))); } catch (e) { cb([]); }
-    }
+    let done = false;
+    const finish = (v) => { if (!done) { done = true; cb(v); } };
+    setTimeout(() => finish([]), 1500);  // не ждём хранилище дольше 1,5 секунды
+    try {
+      if (canCloud) tg.CloudStorage.getItem("history", (e, v) => finish(e ? [] : safeParse(v)));
+      else finish(safeParse(localStorage.getItem("history")));
+    } catch (e) { finish([]); }
   },
   set(list) {
     const v = JSON.stringify(list);
-    if (inTelegram && tg.CloudStorage) tg.CloudStorage.setItem("history", v);
-    else { try { localStorage.setItem("history", v); } catch (e) {} }
+    try {
+      if (canCloud) tg.CloudStorage.setItem("history", v);
+      else localStorage.setItem("history", v);
+    } catch (e) {}
   },
 };
 function safeParse(v) { try { return JSON.parse(v) || []; } catch (e) { return []; } }
 
 function haptic(kind) {
-  if (inTelegram && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  try { if (inTelegram && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); } catch (e) {}
 }
 function toast(text) {
   const t = $("toast"); t.textContent = text; t.classList.add("show");
@@ -455,16 +461,28 @@ function submit() {
   const [w, h] = state.format === "custom" ? customSize() : [f[2], f[3]];
   const payload = { prompt, width: w, height: h, steps: state.steps, cfg: state.cfg, lora: state.lora, count: state.count };
 
+  if (!inTelegram) {
+    store.get((list) => { const next = [prompt, ...list.filter((x) => x !== prompt)].slice(0, 8); store.set(next); drawHistory(next); });
+    toast("Это предпросмотр: в Telegram кадр уйдёт в бота");
+    return;
+  }
+  if (tg.initDataUnsafe && tg.initDataUnsafe.query_id) {
+    alertMsg("Студия открыта не той кнопкой. Закройте её и откройте кнопкой «🎞 Открыть студию» под полем ввода в чате с ботом (если её нет — отправьте боту /app).");
+    return;
+  }
+  try { tg.MainButton.showProgress(); } catch (e) {}
+  // сохраняем историю (не дольше 1,5 с), затем отправляем кадр в бота
   store.get((list) => {
-    const next = [prompt, ...list.filter((x) => x !== prompt)].slice(0, 8);
-    store.set(next);
-    if (inTelegram) {
-      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-      setTimeout(() => tg.sendData(JSON.stringify(payload)), 150);
-    } else {
-      drawHistory(next);
-      toast("Это предпросмотр: в Telegram кадр уйдёт в бота");
-    }
+    store.set([prompt, ...list.filter((x) => x !== prompt)].slice(0, 8));
+    setTimeout(() => {
+      try { if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+      try {
+        tg.sendData(JSON.stringify(payload));
+      } catch (e) {
+        try { tg.MainButton.hideProgress(); } catch (x) {}
+        alertMsg("Не удалось отправить кадр в бота: " + e.message + ". Откройте студию кнопкой «🎞 Открыть студию» под полем ввода (команда /app).");
+      }
+    }, 300);
   });
 }
 
