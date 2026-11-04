@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Тёмная комната</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js" onerror="void 0"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -268,6 +268,14 @@
 <script>
 const tg = window.Telegram && window.Telegram.WebApp;
 const inTelegram = !!(tg && tg.platform && tg.platform !== "unknown");
+// запасной режим: внутри Telegram, но служебный скрипт telegram.org не загрузился
+const rawTelegram = !inTelegram && !!(window.TelegramWebviewProxy || /tgWebApp(Data|Platform|Version)/.test(location.hash));
+function rawPost(type, data) {
+  const s = JSON.stringify(data || {});
+  if (window.TelegramWebviewProxy) { window.TelegramWebviewProxy.postEvent(type, s); return; }
+  if (window.external && "notify" in window.external) { window.external.notify(JSON.stringify({ eventType: type, eventData: data })); return; }
+  window.parent.postMessage(JSON.stringify({ eventType: type, eventData: data }), "*");
+}
 const canCloud = inTelegram && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9");
 function alertMsg(text) { if (inTelegram && tg.showAlert) { try { tg.showAlert(text); return; } catch (e) {} } toast(text); }
 
@@ -463,6 +471,14 @@ function submit() {
   const [w, h] = state.format === "custom" ? customSize() : [f[2], f[3]];
   const payload = { prompt, width: w, height: h, steps: state.steps, cfg: state.cfg, lora: state.lora, count: state.count };
 
+  if (rawTelegram) {
+    historyList = [prompt, ...historyList.filter((x) => x !== prompt)].slice(0, 8);
+    store.set(historyList);
+    $("go").disabled = true; $("go").textContent = "Отправляю…";
+    try { rawPost("web_app_data_send", { data: JSON.stringify(payload) }); }
+    catch (e) { $("go").disabled = false; update(); toast("Не удалось отправить: " + e.message); }
+    return;
+  }
   if (!inTelegram) {
     store.get((list) => { const next = [prompt, ...list.filter((x) => x !== prompt)].slice(0, 8); store.set(next); drawHistory(next); });
     toast("Это предпросмотр: в Telegram кадр уйдёт в бота");
@@ -497,7 +513,7 @@ if (inTelegram) {
 render();
 let historyList = [];
 store.get((list) => { historyList = list; drawHistory(list); });
-$("ver").textContent = "Студия v3" + (inTelegram ? " · " + tg.platform + " · Telegram " + tg.version : " · предпросмотр");
+$("ver").textContent = "Студия v4" + (inTelegram ? " · " + tg.platform + " · Telegram " + tg.version : rawTelegram ? " · запасной режим" : " · предпросмотр");
 </script>
 </body>
 </html>
