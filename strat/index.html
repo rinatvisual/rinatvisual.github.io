@@ -61,12 +61,14 @@ header .who{color:var(--muted);font-size:13px}
 .day{min-height:96px;border:1px solid var(--line);border-radius:10px;padding:6px;background:var(--card);position:relative;display:flex;flex-direction:column;gap:3px;overflow:hidden}
 .day.out{opacity:.35}
 .day.today .num{background:var(--accent);color:#fff;border-radius:6px;padding:0 6px}
-.cmc{position:absolute;right:5px;bottom:4px;font-size:11px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:2px}
+.cmc{position:absolute;right:5px;bottom:5px;font-size:13px;font-weight:700;color:#fff;background:#e5383b;border-radius:20px;padding:2px 9px;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(229,56,59,.35)}
+.day.hc{border-color:#e5383b;border-width:2px}
+@media (max-width:600px){.cmc{font-size:10px;padding:0 5px;right:3px;bottom:3px}}
 .mini .md{position:relative}
-.mini .md.hc::after{content:'';position:absolute;top:1px;right:1px;width:6px;height:6px;border-radius:50%;background:var(--accent);border:1px solid var(--card)}
+.mini .md.hc::after{content:'';position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:#e5383b;border:2px solid var(--card)}
 .ktkey b{background:var(--accent);color:#fff;border-radius:5px;padding:0 5px;font-size:11px}
-.ktkey .ci{color:var(--accent);font-weight:700}
-.cmn{color:var(--accent);font-weight:700;font-size:12px;white-space:nowrap}
+.ktkey .ci{color:#fff;background:#e5383b;border-radius:20px;padding:1px 8px;font-weight:700}
+.cmn{color:#fff;background:#e5383b;border-radius:20px;padding:2px 8px;font-weight:700;font-size:12px;white-space:nowrap}
 .day.key{cursor:pointer}
 .day.key:hover{border-color:var(--accent)}
 .day.kt{box-shadow:inset 0 0 0 2px var(--ink)}
@@ -380,7 +382,7 @@ function renderMonth(){
     if(ts.length>3) inner+=`<span class="more">+ещё ${ts.length-3}</span>`;
     inner+=`<span class="dots">${ts.map(t=>`<i class="dot" style="background:${colorOf(t)}"></i>`).join('')}</span>`;
     const nc=dayComments(ts); if(nc) inner+=`<span class="cmc" title="Комментариев: ${nc}">💬 ${nc}</span>`;
-    h+=`<div class="day ${d.getMonth()!==m?'out':''} ${k===td?'today':''} ${key?'key':''} ${kt?'kt':''}" data-d="${k}">${inner}</div>`;
+    h+=`<div class="day ${d.getMonth()!==m?'out':''} ${k===td?'today':''} ${dayComments(ts)?'hc':''} ${key?'key':''} ${kt?'kt':''}" data-d="${k}">${inner}</div>`;
   }
   $('#view').innerHTML=`<div class="grid">${h}</div>`;
   bindDays('.day.key');
