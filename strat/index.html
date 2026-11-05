@@ -504,7 +504,7 @@ async function loadSync(){
   SYNC=null;
 }
 async function ghPut(path,obj){
-  const h={Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json'};
+  const h={Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json','Content-Type':'application/json'};
   const g=await fetch(api(path)+'?t='+Date.now(),{headers:h,cache:'no-store'}); const sha=g.ok?(await g.json()).sha:null;
   const body={message:'strat: sync settings',content:btoa(JSON.stringify(await encJSON(obj)))}; if(sha)body.sha=sha;
   const r=await fetch(api(path),{method:'PUT',headers:h,body:JSON.stringify(body)}); if(!r.ok)throw new Error('GitHub '+r.status);
@@ -524,7 +524,8 @@ async function syncPull(){
     try{const r=await fetch('comments.enc.json?t='+Date.now(),{cache:'no-store'});if(r.ok){absorb(await decJSON(await r.json()));refresh()}}catch(e){}
     st('⚠ Только в этом браузере — настройте «Хранение»','bad');return;
   }
-  try{st('Синхронизация…');const {data}=await ghGet();absorb(data);refresh();ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));st('Синхронизировано с GitHub ✓','ok')}
+  try{st('Синхронизация…');const {data}=await ghGet();const before=JSON.stringify(norm(data));absorb(data);refresh();ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));
+    if(JSON.stringify(snapshot())!==before) await syncPush(); else st('Синхронизировано с GitHub ✓','ok')}
   catch(e){st('GitHub недоступен: '+e.message,'bad')}
 }
 async function syncPush(){
@@ -534,7 +535,7 @@ async function syncPush(){
       const {sha,data}=await ghGet(); absorb(data); refresh();
       const body={message:'strat: comments/edits update',content:btoa(JSON.stringify(await encJSON(snapshot())))};
       if(sha)body.sha=sha;
-      const r=await fetch(api(SYNC.path),{method:'PUT',headers:{Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json'},body:JSON.stringify(body)});
+      const r=await fetch(api(SYNC.path),{method:'PUT',headers:{Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(body)});
       if(r.status===409||r.status===422)continue;
       if(!r.ok)throw new Error('GitHub '+r.status);
       ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));st('Синхронизировано с GitHub ✓','ok');return;
