@@ -122,6 +122,24 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
 .sync{font-size:12px;color:var(--muted)}
 .sync.ok{color:var(--ok)}
 .sync.bad{color:var(--danger)}
+.edit{margin-top:10px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.edit label span{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+.edit input{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--soft);outline:none}
+.edit input:focus{border-color:var(--accent)}
+.badge.ed{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.lnk{border:0;background:transparent;color:var(--accent);padding:0;font-size:12px;font-weight:600}
+/* list */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
+.tbl td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr.ktr td{background:var(--soft);font-weight:700}
+.tbl input{width:100%;padding:5px 6px;border:1px solid transparent;border-radius:6px;background:transparent;outline:none}
+.tbl input:hover{border-color:var(--line)}
+.tbl input:focus{border-color:var(--accent);background:var(--soft)}
+.tbl tr.chg td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.tbl .rs{display:flex;align-items:center;gap:6px}
+.tblw{overflow-x:auto}
+@media (max-width:600px){.edit{grid-template-columns:1fr 1fr}.edit label:first-child{grid-column:1/-1}.tbl{min-width:640px}}
 
 @media (max-width:900px){
   .wrap{grid-template-columns:1fr;padding:16px}
@@ -158,7 +176,8 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
     <h1>План-график по итогам стратсессии 15.10.2026</h1>
     <span class="sync" id="syncst"></span>
     <span class="who" id="who"></span>
-    <button class="btn ghost" id="setbtn" title="Синхронизация комментариев">⚙︎ Хранение</button>
+    <button class="btn" id="xlsbtn">⬇ Скачать Excel</button>
+    <button class="btn ghost" id="setbtn" title="Синхронизация комментариев и правок">⚙︎ Хранение</button>
     <button class="btn ghost" id="outbtn">Выйти</button>
   </header>
   <div class="wrap">
@@ -168,7 +187,7 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
         <h2 id="title"></h2>
         <button class="ib" id="next" aria-label="Вперёд">›</button>
         <button class="ib" id="today">Сегодня</button>
-        <div class="seg"><button id="vm" class="on">Месяц</button><button id="vy">Год</button></div>
+        <div class="seg"><button id="vm" class="on">Месяц</button><button id="vy">Год</button><button id="vl">Список</button></div>
       </div>
       <div id="view"></div>
     </main>
@@ -182,6 +201,7 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
 </section>
 
 <div id="tip" class="hidden"></div>
+<datalist id="people"></datalist>
 
 <dialog id="dlg">
   <div class="dh"><h2 id="dtitle"></h2><button class="ib" id="dclose" aria-label="Закрыть">✕</button></div>
@@ -191,8 +211,8 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
 <dialog id="sdlg">
   <div class="dh"><h2>Где хранятся комментарии</h2><button class="ib" id="sclose" aria-label="Закрыть">✕</button></div>
   <div class="db">
-    <p style="margin:0;font-size:13px">Комментарии всегда шифруются вашим ключом. Без настройки они хранятся только в этом браузере.
-      Чтобы их видела вся команда, укажите токен GitHub — тогда зашифрованный файл комментариев будет сохраняться в репозиторий.</p>
+    <p style="margin:0;font-size:13px">Комментарии и правки дат/ответственных всегда шифруются вашим ключом. Без настройки они хранятся только в этом браузере.
+      Чтобы их видела вся команда, укажите токен GitHub — тогда зашифрованный файл будет сохраняться в репозиторий.</p>
     <label class="field"><span>Репозиторий (владелец/имя)</span><input id="srepo" placeholder="rinatvisual/rinatvisual.github.io"></label>
     <label class="field"><span>Путь к файлу</span><input id="spath" placeholder="strat/comments.enc.json"></label>
     <label class="field"><span>GitHub-токен (fine-grained, доступ Contents: Read and write только к этому репозиторию)</span><input id="stok" type="password" placeholder="github_pat_…"></label>
@@ -202,6 +222,7 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
   </div>
 </dialog>
 
+<script src="jszip.min.js"></script>
 <script>
 // Календарь сроков: расшифровка данных, отрисовка, комментарии
 const PALETTE=['#2f6fde','#e0553d','#1f9d63','#9b51e0','#e8a317','#0fa3b1','#d6407f','#6b8e23','#8d5b3e','#4b5bd7','#c2410c','#0f766e'];
@@ -215,7 +236,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const ss={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},del(k){try{sessionStorage.removeItem(k)}catch(e){}}};
 
-let KEY=null, USER='', TASKS=[], COLORS={}, BYDATE={}, COMMENTS={}, OFF=new Set();
+let KEY=null, USER='', BASE=[], TASKS=[], PEOPLE=[], COLORS={}, BYDATE={}, COMMENTS={}, EDITS={}, OFF=new Set(), OPEN_DAY=null;
 let cur=new Date(), view='month';
 
 async function sha(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -239,16 +260,21 @@ async function login(u,p){
 async function open(raw,u,data){
   KEY=await importKey(raw); USER=u; data=data||await loadData();
   const pl=JSON.parse(dec.decode(await aesDec(KEY,data.iv,data.ct)));
-  TASKS=pl.tasks; index();
-  COMMENTS=await readLocal();
+  BASE=pl.tasks; PEOPLE=pl.people||[];
+  ({c:COMMENTS,e:EDITS}=await readLocal()); applyEdits();
   $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
   $('#who').textContent=u;
   const now=new Date(); cur=new Date(now.getFullYear(),now.getMonth(),1);
   legend(); render(); syncPull();
 }
 
+function applyEdits(){
+  TASKS=BASE.map(b=>{const e=EDITS[b.id];if(!e||e.reset)return {...b};return {...b,resp:e.resp,start:e.start,due:e.due,edited:e}});
+  index();
+  $('#people').innerHTML=[...new Set([...PEOPLE,...TASKS.map(t=>t.resp).filter(Boolean)])].map(n=>`<option value="${esc(n)}">`).join('');
+}
 function index(){
-  const names=[...new Set(TASKS.filter(t=>!t.kt&&t.resp).map(t=>t.resp))];
+  const names=[...new Set([...BASE,...TASKS].filter(t=>!t.kt&&t.resp).map(t=>t.resp))];
   COLORS={}; names.forEach((n,i)=>COLORS[n]=PALETTE[i%PALETTE.length]); COLORS[NONE]=NONE_COLOR;
   BYDATE={}; TASKS.forEach(t=>{(BYDATE[t.due]=BYDATE[t.due]||[]).push(t)});
 }
@@ -270,7 +296,63 @@ function legend(){
   });
 }
 
-function render(){ view==='month'?renderMonth():renderYear() }
+function render(){ $('.calbar').querySelectorAll('#prev,#next,#today,#title').forEach(e=>e.classList.toggle('hidden',view==='list')); view==='month'?renderMonth():view==='year'?renderYear():renderList() }
+
+function renderList(){
+  let h='<div class="tblw"><table class="tbl"><thead><tr><th>№</th><th>Задача</th><th style="width:210px">Ответственный</th><th style="width:140px">Начало</th><th style="width:140px">Срок</th><th>Статус</th></tr></thead><tbody>';
+  TASKS.forEach(t=>{
+    if(t.kt){h+=`<tr class="ktr"><td>${esc(t.id)}</td><td colspan="5">${esc(t.title)}</td></tr>`;return}
+    if(OFF.has(respOf(t)))return;
+    h+=`<tr class="${t.edited?'chg':''}" data-id="${esc(t.id)}"><td>${esc(t.id)}</td><td>${esc(t.title)}</td>
+      <td><div class="rs"><i class="dot" style="background:${colorOf(t)}"></i><input list="people" data-f="resp" value="${esc(t.resp)}" placeholder="${NONE}"></div></td>
+      <td><input type="date" data-f="start" value="${t.start||''}"></td><td><input type="date" data-f="due" value="${t.due||''}"></td>
+      <td><span class="badge">${esc(t.status||'—')}</span>${isLate(t)?' <span class="badge late">просрочено</span>':''}</td></tr>`;
+  });
+  $('#view').innerHTML=h+'</tbody></table></div><p class="hint">Изменения сохраняются сразу. Изменённые строки отмечены синей полосой слева.</p>';
+  $('#view').querySelectorAll('tr[data-id] input').forEach(inp=>inp.onchange=async()=>{
+    const tr=inp.closest('tr'), id=tr.dataset.id, v=f=>tr.querySelector(`[data-f="${f}"]`).value.trim();
+    if(!v('due')){inp.value=TASKS.find(t=>t.id===id).due;return}
+    await saveEdit(id,{resp:v('resp'),start:v('start')||null,due:v('due')});
+  });
+}
+
+async function saveEdit(id,vals){
+  const b=BASE.find(t=>t.id===id);
+  const same=b.resp===vals.resp&&b.start===vals.start&&b.due===vals.due;
+  EDITS[id]=same?{reset:true,a:USER,ts:Date.now()}:{...vals,a:USER,ts:Date.now()};
+  applyEdits(); legend(); await persist(); render();
+  if($('#dlg').open&&OPEN_DAY)openDay(BASE.find(t=>t.id===id)&&TASKS.find(t=>t.id===id).due||OPEN_DAY);
+}
+
+/* выгрузка Excel: тот же файл, меняем только ячейки C (ответственный), E (начало), F (срок) */
+const xmlEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const serial=s=>{const [y,m,d]=s.split('-').map(Number);return (Date.UTC(y,m-1,d)-Date.UTC(1899,11,30))/864e5};
+function setCell(xml,ref,inner,type){
+  const re=new RegExp(`<c r="${ref}"( s="\\d+")?(?: t="\\w+")?(?:/>|>[\\s\\S]*?</c>)`);
+  return xml.replace(re,(m,s)=>inner==null?`<c r="${ref}"${s||''}/>`:`<c r="${ref}"${s||''}${type?` t="${type}"`:''}>${inner}</c>`);
+}
+async function exportXlsx(){
+  const btn=$('#xlsbtn'); btn.disabled=true; btn.textContent='Готовлю…';
+  try{
+    const r=await fetch('template.enc.json',{cache:'no-store'}); const t=await r.json();
+    const zip=await JSZip.loadAsync(await aesDec(KEY,t.iv,t.ct));
+    const p='xl/worksheets/sheet1.xml'; let xml=await zip.file(p).async('string');
+    TASKS.filter(x=>!x.kt&&x.row).forEach(x=>{
+      xml=setCell(xml,'C'+x.row,x.resp?`<is><t>${xmlEsc(x.resp)}</t></is>`:null,'inlineStr');
+      xml=setCell(xml,'E'+x.row,x.start?`<v>${serial(x.start)}</v>`:null);
+      xml=setCell(xml,'F'+x.row,x.due?`<v>${serial(x.due)}</v>`:null);
+    });
+    zip.file(p,xml);
+    let wb=await zip.file('xl/workbook.xml').async('string');
+    if(!/fullCalcOnLoad/.test(wb)) wb=wb.replace(/<calcPr([^>]*?)\/>/,'<calcPr$1 fullCalcOnLoad="1"/>');
+    zip.file('xl/workbook.xml',wb);
+    const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',compression:'DEFLATE'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`plan-grafik_${ru(ymd(new Date()))}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},2000);
+  }catch(e){alert('Не получилось выгрузить: '+e.message)}
+  btn.disabled=false; btn.textContent='⬇ Скачать Excel';
+}
+$('#xlsbtn').onclick=exportXlsx;
 
 function renderMonth(){
   const y=cur.getFullYear(), m=cur.getMonth();
@@ -331,6 +413,7 @@ function hideTip(){$('#tip').classList.add('hidden')}
 function isLate(t){return t.due<ymd(new Date())&&!['Готово','Отменено'].includes(t.status)}
 
 function openDay(k){
+  OPEN_DAY=k;
   const ts=visible(BYDATE[k]||[]);
   $('#dtitle').textContent='Срок '+ru(k)+(ts.some(t=>t.kt)?' · '+ts.find(t=>t.kt).id:'');
   $('#dbody').innerHTML=ts.filter(t=>!t.kt).map(t=>`
@@ -343,11 +426,27 @@ function openDay(k){
         <dt>Статус</dt><dd><span class="badge">${esc(t.status||'—')}</span> ${isLate(t)?'<span class="badge late">просрочено</span>':''}</dd>
         ${t.comment?`<dt>Комментарий</dt><dd>${esc(t.comment)}</dd>`:''}
         ${t.note?`<dt>Пометка</dt><dd>${esc(t.note)}</dd>`:''}
+        ${t.edited?`<dt>Изменено</dt><dd><span class="badge ed">${esc(t.edited.a)} · ${new Date(t.edited.ts).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'})}</span> <button class="lnk" data-reset="${esc(t.id)}">вернуть как в Excel</button></dd>`:''}
       </dl>
+      <button class="lnk" data-edit="${esc(t.id)}" style="margin-top:8px">✎ Изменить даты / ответственного</button>
+      <div class="edit hidden" data-form="${esc(t.id)}">
+        <label><span>Ответственный</span><input list="people" data-f="resp" value="${esc(t.resp)}" placeholder="${NONE}"></label>
+        <label><span>Начало</span><input type="date" data-f="start" value="${t.start||''}"></label>
+        <label><span>Срок</span><input type="date" data-f="due" value="${t.due||''}" required></label>
+        <div class="row" style="grid-column:1/-1;margin:0"><button class="btn" data-save="${esc(t.id)}">Сохранить изменения</button><span class="st"></span></div>
+      </div>
       <div class="cms" data-t="${esc(t.id)}"></div>
-    </div>`).join('')||'<p>На эту дату только контрольная точка.</p>';
+    </div>`).join('')||`<p>${ts.some(t=>t.kt)?'На эту дату только контрольная точка.':'Задач на эту дату нет.'}</p>`;
   $('#dbody').querySelectorAll('.cms').forEach(drawComments);
-  $('#dlg').showModal();
+  $('#dbody').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>$(`[data-form="${CSS.escape(b.dataset.edit)}"]`).classList.toggle('hidden'));
+  $('#dbody').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{const t=BASE.find(x=>x.id===b.dataset.reset);saveEdit(t.id,{resp:t.resp,start:t.start,due:t.due})});
+  $('#dbody').querySelectorAll('[data-save]').forEach(b=>b.onclick=async()=>{
+    const f=b.closest('.edit'), v=n=>f.querySelector(`[data-f="${n}"]`).value.trim();
+    if(!v('due')){f.querySelector('.st').textContent='Укажите срок';return}
+    if(v('start')&&v('start')>v('due')){f.querySelector('.st').textContent='Начало позже срока';return}
+    await saveEdit(b.dataset.save,{resp:v('resp'),start:v('start')||null,due:v('due')});
+  });
+  if(!$('#dlg').open)$('#dlg').showModal();
 }
 
 function liveList(id){return (COMMENTS[id]||[]).filter(c=>!c.del).sort((a,b)=>a.ts-b.ts)}
@@ -370,9 +469,15 @@ function confirmDel(b){if(b.dataset.sure){return true}b.dataset.sure=1;b.textCon
 /* хранение комментариев */
 async function encJSON(obj){return aesEnc(KEY,enc.encode(JSON.stringify(obj)))}
 async function decJSON(o){return JSON.parse(dec.decode(await aesDec(KEY,o.iv,o.ct)))}
-async function readLocal(){const s=ls.get('strat.c');if(!s)return{};try{return await decJSON(JSON.parse(s))}catch(e){return{}}}
-function merge(a,b){const out={};for(const src of [a,b])for(const [k,list] of Object.entries(src||{})){const m=new Map((out[k]||[]).map(c=>[c.id,c]));list.forEach(c=>{const o=m.get(c.id);m.set(c.id,o&&o.del?o:c)});out[k]=[...m.values()]}return out}
-async function persist(){ls.set('strat.c',JSON.stringify(await encJSON(COMMENTS)));if(syncOn())await syncPush()}
+// хранилище: {c: комментарии по задачам, e: правки по задачам}; старый формат — только комментарии
+const norm=o=>o&&(o.c||o.e)?{c:o.c||{},e:o.e||{}}:{c:o||{},e:{}};
+async function readLocal(){const s=ls.get('strat.c');if(!s)return{c:{},e:{}};try{return norm(await decJSON(JSON.parse(s)))}catch(e){return{c:{},e:{}}}}
+function mergeC(a,b){const out={};for(const src of [a,b])for(const [k,list] of Object.entries(src||{})){const m=new Map((out[k]||[]).map(c=>[c.id,c]));list.forEach(c=>{const o=m.get(c.id);m.set(c.id,o&&o.del?o:c)});out[k]=[...m.values()]}return out}
+function mergeE(a,b){const out={...a};for(const [k,v] of Object.entries(b||{}))if(!out[k]||v.ts>out[k].ts)out[k]=v;return out}
+function absorb(o){o=norm(o);COMMENTS=mergeC(o.c,COMMENTS);EDITS=mergeE(o.e,EDITS)}
+const snapshot=()=>({c:COMMENTS,e:EDITS});
+async function persist(){ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));if(syncOn())await syncPush()}
+function refresh(){applyEdits();legend();render()}
 
 let SYNC=null;
 function syncOn(){return !!SYNC}
@@ -389,23 +494,23 @@ async function ghGet(){
 async function syncPull(){
   await loadSync();
   if(!SYNC){
-    try{const r=await fetch('comments.enc.json?t='+Date.now(),{cache:'no-store'});if(r.ok){COMMENTS=merge(await decJSON(await r.json()),COMMENTS)}}catch(e){}
-    st('Комментарии: этот браузер');return;
+    try{const r=await fetch('comments.enc.json?t='+Date.now(),{cache:'no-store'});if(r.ok){absorb(await decJSON(await r.json()));refresh()}}catch(e){}
+    st('Данные: этот браузер');return;
   }
-  try{st('Синхронизация…');const {data}=await ghGet();COMMENTS=merge(data,COMMENTS);ls.set('strat.c',JSON.stringify(await encJSON(COMMENTS)));st('Комментарии: GitHub ✓','ok')}
+  try{st('Синхронизация…');const {data}=await ghGet();absorb(data);refresh();ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));st('Синхронизировано с GitHub ✓','ok')}
   catch(e){st('GitHub недоступен: '+e.message,'bad')}
 }
 async function syncPush(){
   for(let i=0;i<3;i++){
     try{
       st('Отправка…');
-      const {sha,data}=await ghGet(); COMMENTS=merge(data,COMMENTS);
-      const body={message:'comments update',content:btoa(JSON.stringify(await encJSON(COMMENTS)))};
+      const {sha,data}=await ghGet(); absorb(data); refresh();
+      const body={message:'strat: comments/edits update',content:btoa(JSON.stringify(await encJSON(snapshot())))};
       if(sha)body.sha=sha;
       const r=await fetch(api(SYNC.path),{method:'PUT',headers:{Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json'},body:JSON.stringify(body)});
       if(r.status===409||r.status===422)continue;
       if(!r.ok)throw new Error('GitHub '+r.status);
-      ls.set('strat.c',JSON.stringify(await encJSON(COMMENTS)));st('Комментарии: GitHub ✓','ok');return;
+      ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));st('Синхронизировано с GitHub ✓','ok');return;
     }catch(e){st('Не отправлено: '+e.message,'bad');return}
   }
   st('Конфликт, попробуйте ещё раз','bad');
@@ -420,13 +525,13 @@ $('#ssave').onclick=async()=>{
   SYNC={repo,path,token}; ls.set('strat.sync',JSON.stringify(await encJSON(SYNC)));
   $('#sst').textContent='Проверяю…'; await syncPush(); $('#sst').textContent=$('#syncst').textContent;
 };
-$('#soff').onclick=()=>{ls.del('strat.sync');SYNC=null;st('Комментарии: этот браузер');$('#sst').textContent='Синхронизация отключена'};
-$('#sexp').onclick=async()=>{const blob=new Blob([JSON.stringify(await encJSON(COMMENTS))],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comments.enc.json';a.click()};
-$('#simp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{COMMENTS=merge(COMMENTS,await decJSON(JSON.parse(await f.text())));await persist();$('#sst').textContent='Загружено';render()}catch(_){$('#sst').textContent='Файл не подходит к этому ключу'}};
+$('#soff').onclick=()=>{ls.del('strat.sync');SYNC=null;st('Данные: этот браузер');$('#sst').textContent='Синхронизация отключена'};
+$('#sexp').onclick=async()=>{const blob=new Blob([JSON.stringify(await encJSON(snapshot()))],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comments.enc.json';a.click()};
+$('#simp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{absorb(await decJSON(JSON.parse(await f.text())));await persist();$('#sst').textContent='Загружено';refresh()}catch(_){$('#sst').textContent='Файл не подходит к этому ключу'}};
 
 /* навигация */
-function setView(v){view=v;$('#vm').classList.toggle('on',v==='month');$('#vy').classList.toggle('on',v==='year');render()}
-$('#vm').onclick=()=>setView('month'); $('#vy').onclick=()=>setView('year');
+function setView(v){view=v;$('#vm').classList.toggle('on',v==='month');$('#vy').classList.toggle('on',v==='year');$('#vl').classList.toggle('on',v==='list');render()}
+$('#vm').onclick=()=>setView('month'); $('#vy').onclick=()=>setView('year'); $('#vl').onclick=()=>setView('list');
 $('#prev').onclick=()=>{cur=view==='month'?new Date(cur.getFullYear(),cur.getMonth()-1,1):new Date(cur.getFullYear()-1,cur.getMonth(),1);render()};
 $('#next').onclick=()=>{cur=view==='month'?new Date(cur.getFullYear(),cur.getMonth()+1,1):new Date(cur.getFullYear()+1,cur.getMonth(),1);render()};
 $('#today').onclick=()=>{const n=new Date();cur=new Date(n.getFullYear(),n.getMonth(),1);render()};

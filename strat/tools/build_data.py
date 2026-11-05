@@ -35,15 +35,19 @@ def d(v):
 def read_tasks(path):
     ws = openpyxl.load_workbook(path, data_only=True)['Гант']
     tasks = []
-    for r in ws.iter_rows(min_row=5, max_col=10, values_only=True):
+    for row, r in enumerate(ws.iter_rows(min_row=5, max_col=10, values_only=True), start=5):
         num, title, resp, co, start, due, note, status, comment, ctrl = r
         if not title or not due or str(num).strip() == '—':
             continue
-        tasks.append({'id': str(num).strip(), 'title': str(title).strip(), 'resp': resp or '',
+        tasks.append({'row': row, 'id': str(num).strip(), 'title': str(title).strip(), 'resp': resp or '',
                       'co': co or '', 'start': d(start), 'due': d(due), 'note': note or '',
                       'status': status or '', 'comment': comment or '', 'ctrl': ctrl or '',
                       'kt': str(num).startswith('КТ')})
     return tasks
+
+def read_people(path):
+    ws = openpyxl.load_workbook(path, data_only=True)['Справочник']
+    return [str(r[0]).strip() for r in ws.iter_rows(min_row=2, max_col=1, values_only=True) if r[0]]
 
 ap = argparse.ArgumentParser()
 ap.add_argument('xlsx'); ap.add_argument('--admin', required=True)
@@ -63,8 +67,12 @@ for x in a.add:
 for l in a.remove:
     users = [e for e in users if e['u'] != uid(l)]
 
-payload = json.dumps({'tasks': read_tasks(a.xlsx), 'built': datetime.date.today().isoformat()}, ensure_ascii=False)
+payload = json.dumps({'tasks': read_tasks(a.xlsx), 'people': read_people(a.xlsx), 'built': datetime.date.today().isoformat()}, ensure_ascii=False)
 iv = os.urandom(12)
 out = {'v': 1, 'iter': ITER, 'users': users, 'iv': b64(iv), 'ct': b64(AESGCM(dk).encrypt(iv, payload.encode(), None))}
 json.dump(out, open(OUT, 'w'))
+# шаблон Excel для выгрузки с сайта — тоже зашифрован
+tiv = os.urandom(12)
+json.dump({'iv': b64(tiv), 'ct': b64(AESGCM(dk).encrypt(tiv, open(a.xlsx, 'rb').read(), None))},
+          open(os.path.join(os.path.dirname(OUT), 'template.enc.json'), 'w'))
 print('OK:', len(read_tasks(a.xlsx)), 'задач,', len(users), 'пользователей ->', os.path.abspath(OUT))
