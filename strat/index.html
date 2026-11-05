@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>План-график стратсессии</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f5f7;--card:#fff;--ink:#16181d;--muted:#6b7280;--line:#e3e5ea;--soft:#f0f1f4;
+  --accent:#2f5bea;--danger:#d64545;--ok:#1f9d63;--shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px rgba(16,24,40,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1115;--card:#171a20;--ink:#eceef2;--muted:#9aa1ad;--line:#262a33;--soft:#1e222a;
+  --accent:#7b9bff;--danger:#ff6b6b;--ok:#3ccf8e;--shadow:0 1px 2px rgba(0,0,0,.4);
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1115;--card:#171a20;--ink:#eceef2;--muted:#9aa1ad;--line:#262a33;--soft:#1e222a;
+  --accent:#7b9bff;--danger:#ff6b6b;--ok:#3ccf8e;--shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 Montserrat,system-ui,sans-serif;min-height:100vh}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:16px}
+.lbox{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:32px;width:100%;max-width:380px}
+.lbox h1{font-size:20px;margin:0 0 4px}
+.lbox p{color:var(--muted);margin:0 0 20px;font-size:13px}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);outline:none}
+.field input:focus,textarea:focus{border-color:var(--accent)}
+.btn{border:0;border-radius:10px;padding:10px 16px;background:var(--accent);color:#fff;font-weight:600}
+.btn.wide{width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.6;cursor:default}
+.err{color:var(--danger);font-size:13px;min-height:18px;margin:4px 0 8px}
+
+/* app */
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid var(--line);background:var(--card)}
+header h1{font-size:16px;margin:0;flex:1;min-width:180px}
+header .who{color:var(--muted);font-size:13px}
+.wrap{display:grid;grid-template-columns:1fr 260px;gap:20px;padding:20px 24px;max-width:1400px;margin:0 auto}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.cal{padding:16px}
+.calbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.calbar h2{font-size:18px;margin:0 8px 0 0;min-width:170px;text-transform:capitalize}
+.ib{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;min-width:34px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-left:auto}
+.seg button{border:0;background:transparent;padding:6px 12px}
+.seg button.on{background:var(--accent);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.wd{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:0 4px}
+.day{min-height:96px;border:1px solid var(--line);border-radius:10px;padding:6px;background:var(--card);position:relative;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.day.out{opacity:.35}
+.day.today .num{background:var(--danger);color:#fff;border-radius:6px;padding:0 6px}
+.day.key{cursor:pointer}
+.day.key:hover{border-color:var(--accent)}
+.day.kt{box-shadow:inset 0 0 0 2px var(--ink)}
+.num{font-size:12px;font-weight:600;align-self:flex-start}
+.ktl{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;background:var(--ink);color:var(--card);border-radius:5px;padding:1px 5px}
+.chip{font-size:11px;font-weight:600;color:#fff;border-radius:5px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.more{font-size:11px;color:var(--muted)}
+.dots{display:none;gap:3px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dim{opacity:.18}
+
+/* year */
+.year{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.mini h3{font-size:13px;margin:0 0 6px;text-transform:capitalize;cursor:pointer}
+.mini .grid{gap:2px}
+.mini .md{aspect-ratio:1;border-radius:4px;font-size:10px;display:grid;place-items:center;color:var(--muted)}
+.mini .md.key{color:#fff;font-weight:700;cursor:pointer}
+.mini .md.kt{outline:2px solid var(--ink);outline-offset:-1px}
+
+/* legend */
+.side{padding:16px;align-self:start;position:sticky;top:16px}
+.side h3{font-size:13px;margin:0 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.lg{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;padding:6px 6px;border-radius:8px;text-align:left}
+.lg:hover{background:var(--soft)}
+.lg .sw{width:14px;height:14px;border-radius:4px;flex:none}
+.lg .nm{flex:1}
+.lg .ct{color:var(--muted);font-size:12px}
+.lg.off{opacity:.35}
+.hint{font-size:12px;color:var(--muted);margin-top:10px}
+.ktkey{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--muted)}
+.ktkey i{width:14px;height:14px;border-radius:4px;box-shadow:inset 0 0 0 2px var(--ink);display:inline-block}
+
+/* tooltip */
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--card);border-radius:10px;padding:8px 10px;font-size:12px;max-width:300px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#tip div{display:flex;gap:6px;align-items:baseline;margin:2px 0}
+#tip b{white-space:nowrap}
+
+/* dialog */
+dialog{border:0;border-radius:16px;padding:0;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 48px);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,12,16,.45)}
+.dh{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:1}
+.dh h2{margin:0;font-size:17px;flex:1}
+.db{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.task{border:1px solid var(--line);border-radius:12px;padding:14px;border-left-width:6px}
+.task h4{margin:0 0 8px;font-size:14px}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px}
+.meta dt{color:var(--muted)}
+.meta dd{margin:0}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--soft)}
+.badge.late{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
+.cms{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.cms h5{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.cm{background:var(--soft);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:13px;white-space:pre-wrap;position:relative}
+.cm small{display:block;color:var(--muted);font-size:11px;margin-bottom:2px}
+.cm .x{position:absolute;top:4px;right:6px;border:0;background:transparent;color:var(--muted);font-size:14px}
+textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--soft);outline:none}
+.row{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.row .st{font-size:12px;color:var(--muted)}
+.sync{font-size:12px;color:var(--muted)}
+.sync.ok{color:var(--ok)}
+.sync.bad{color:var(--danger)}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;padding:16px}
+  .side{position:static;order:-1}
+  #legend{display:flex;flex-wrap:wrap;gap:2px}
+  .lg{width:auto}
+  header{padding:12px 16px}
+}
+@media (max-width:600px){
+  .day{min-height:58px;padding:4px}
+  .chip,.more{display:none}
+  .dots{display:flex}
+  .ktl{font-size:9px;top:3px;right:3px;padding:0 3px}
+  .grid{gap:3px}
+  .calbar h2{min-width:0;font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <form class="lbox" id="lform" autocomplete="on">
+    <h1>План-график стратсессии</h1>
+    <p>Данные зашифрованы. Войдите, чтобы открыть календарь.</p>
+    <label class="field"><span>Логин</span><input id="lu" name="username" autocomplete="username" required></label>
+    <label class="field"><span>Пароль</span><input id="lp" name="password" type="password" autocomplete="current-password" required></label>
+    <div class="err" id="lerr"></div>
+    <button class="btn wide" id="lbtn">Войти</button>
+  </form>
+</section>
+
+<section id="app" class="hidden">
+  <header>
+    <h1>План-график по итогам стратсессии 15.10.2026</h1>
+    <span class="sync" id="syncst"></span>
+    <span class="who" id="who"></span>
+    <button class="btn ghost" id="setbtn" title="Синхронизация комментариев">⚙︎ Хранение</button>
+    <button class="btn ghost" id="outbtn">Выйти</button>
+  </header>
+  <div class="wrap">
+    <main class="panel cal">
+      <div class="calbar">
+        <button class="ib" id="prev" aria-label="Назад">‹</button>
+        <h2 id="title"></h2>
+        <button class="ib" id="next" aria-label="Вперёд">›</button>
+        <button class="ib" id="today">Сегодня</button>
+        <div class="seg"><button id="vm" class="on">Месяц</button><button id="vy">Год</button></div>
+      </div>
+      <div id="view"></div>
+    </main>
+    <aside class="panel side">
+      <h3>Ответственные</h3>
+      <div id="legend"></div>
+      <div class="ktkey"><i></i> Контрольная точка</div>
+      <div class="hint">Нажмите на имя, чтобы показать только его сроки. Дата в календаре — срок задачи.</div>
+    </aside>
+  </div>
+</section>
+
+<div id="tip" class="hidden"></div>
+
+<dialog id="dlg">
+  <div class="dh"><h2 id="dtitle"></h2><button class="ib" id="dclose" aria-label="Закрыть">✕</button></div>
+  <div class="db" id="dbody"></div>
+</dialog>
+
+<dialog id="sdlg">
+  <div class="dh"><h2>Где хранятся комментарии</h2><button class="ib" id="sclose" aria-label="Закрыть">✕</button></div>
+  <div class="db">
+    <p style="margin:0;font-size:13px">Комментарии всегда шифруются вашим ключом. Без настройки они хранятся только в этом браузере.
+      Чтобы их видела вся команда, укажите токен GitHub — тогда зашифрованный файл комментариев будет сохраняться в репозиторий.</p>
+    <label class="field"><span>Репозиторий (владелец/имя)</span><input id="srepo" placeholder="rinatvisual/rinatvisual.github.io"></label>
+    <label class="field"><span>Путь к файлу</span><input id="spath" placeholder="strat/comments.enc.json"></label>
+    <label class="field"><span>GitHub-токен (fine-grained, доступ Contents: Read and write только к этому репозиторию)</span><input id="stok" type="password" placeholder="github_pat_…"></label>
+    <div class="row"><button class="btn" id="ssave">Сохранить и синхронизировать</button><button class="btn ghost" id="soff">Отключить синхронизацию</button><span class="st" id="sst"></span></div>
+    <div class="row"><button class="btn ghost" id="sexp">Скачать комментарии (зашифр.)</button>
+      <label class="btn ghost" style="cursor:pointer">Загрузить файл<input type="file" id="simp" accept=".json" hidden></label></div>
+  </div>
+</dialog>
+
+<script>
+// Календарь сроков: расшифровка данных, отрисовка, комментарии
+const PALETTE=['#2f6fde','#e0553d','#1f9d63','#9b51e0','#e8a317','#0fa3b1','#d6407f','#6b8e23','#8d5b3e','#4b5bd7','#c2410c','#0f766e'];
+const NONE_COLOR='#9aa1ad', NONE='Не назначен';
+const MONTHS=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const $=s=>document.querySelector(s);
+const enc=new TextEncoder(), dec=new TextDecoder();
+const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
+const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const ss={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},del(k){try{sessionStorage.removeItem(k)}catch(e){}}};
+
+let KEY=null, USER='', TASKS=[], COLORS={}, BYDATE={}, COMMENTS={}, OFF=new Set();
+let cur=new Date(), view='month';
+
+async function sha(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function aesDec(key,iv,ct){return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(iv)},key,ub64(ct)))}
+async function aesEnc(key,bytes){const iv=crypto.getRandomValues(new Uint8Array(12));return {iv:b64(iv),ct:b64(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,bytes))}}
+async function importKey(raw){return crypto.subtle.importKey('raw',raw,'AES-GCM',true,['encrypt','decrypt'])}
+
+async function loadData(){const r=await fetch('data.enc.json',{cache:'no-store'});if(!r.ok)throw new Error('Нет файла данных');return r.json()}
+
+async function login(u,p){
+  const data=await loadData(); u=u.trim().toLowerCase();
+  const id=await sha('strat:'+u), ent=data.users.find(x=>x.u===id);
+  if(!ent) throw new Error('Неверный логин или пароль');
+  const base=await crypto.subtle.importKey('raw',enc.encode(u+':'+p),'PBKDF2',false,['deriveKey']);
+  const kek=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:ub64(ent.salt),iterations:data.iter},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  let raw; try{raw=await aesDec(kek,ent.iv,ent.wk)}catch(_){throw new Error('Неверный логин или пароль')}
+  ss.set('strat.k',b64(raw)); ss.set('strat.u',u);
+  await open(raw,u,data);
+}
+
+async function open(raw,u,data){
+  KEY=await importKey(raw); USER=u; data=data||await loadData();
+  const pl=JSON.parse(dec.decode(await aesDec(KEY,data.iv,data.ct)));
+  TASKS=pl.tasks; index();
+  COMMENTS=await readLocal();
+  $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+  $('#who').textContent=u;
+  const now=new Date(); cur=new Date(now.getFullYear(),now.getMonth(),1);
+  legend(); render(); syncPull();
+}
+
+function index(){
+  const names=[...new Set(TASKS.filter(t=>!t.kt&&t.resp).map(t=>t.resp))];
+  COLORS={}; names.forEach((n,i)=>COLORS[n]=PALETTE[i%PALETTE.length]); COLORS[NONE]=NONE_COLOR;
+  BYDATE={}; TASKS.forEach(t=>{(BYDATE[t.due]=BYDATE[t.due]||[]).push(t)});
+}
+const respOf=t=>t.resp||NONE;
+const colorOf=t=>COLORS[respOf(t)];
+const surname=n=>n===NONE?'без отв.':n.split(/\s+/).pop();
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const ru=s=>s?s.split('-').reverse().join('.'):'—';
+const visible=list=>list.filter(t=>t.kt||!OFF.has(respOf(t)));
+
+function legend(){
+  const cnt={}; TASKS.filter(t=>!t.kt).forEach(t=>cnt[respOf(t)]=(cnt[respOf(t)]||0)+1);
+  const names=Object.keys(COLORS).filter(n=>cnt[n]);
+  $('#legend').innerHTML=names.map(n=>`<button class="lg ${OFF.has(n)?'off':''}" data-n="${esc(n)}"><span class="sw" style="background:${COLORS[n]}"></span><span class="nm">${esc(n)}</span><span class="ct">${cnt[n]}</span></button>`).join('');
+  $('#legend').querySelectorAll('.lg').forEach(b=>b.onclick=()=>{
+    const n=b.dataset.n, solo=OFF.size===names.length-1&&!OFF.has(n);
+    if(solo){OFF.clear()} else {OFF=new Set(names.filter(x=>x!==n))}
+    legend(); render();
+  });
+}
+
+function render(){ view==='month'?renderMonth():renderYear() }
+
+function renderMonth(){
+  const y=cur.getFullYear(), m=cur.getMonth();
+  $('#title').textContent=MONTHS[m]+' '+y;
+  const start=new Date(y,m,1), off=(start.getDay()+6)%7, td=ymd(new Date());
+  let h=['пн','вт','ср','чт','пт','сб','вс'].map(d=>`<div class="wd">${d}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const d=new Date(y,m,1-off+i), k=ymd(d), all=BYDATE[k]||[], list=visible(all);
+    const kt=all.find(t=>t.kt), ts=list.filter(t=>!t.kt);
+    if(i>=35&&d.getMonth()!==m) break;
+    const key=ts.length||kt;
+    let inner=`<span class="num">${d.getDate()}</span>`;
+    if(kt) inner+=`<span class="ktl">${esc(kt.id)}</span>`;
+    inner+=ts.slice(0,3).map(t=>`<span class="chip" style="background:${colorOf(t)}">${esc(surname(respOf(t)))}</span>`).join('');
+    if(ts.length>3) inner+=`<span class="more">+ещё ${ts.length-3}</span>`;
+    inner+=`<span class="dots">${ts.map(t=>`<i class="dot" style="background:${colorOf(t)}"></i>`).join('')}</span>`;
+    h+=`<div class="day ${d.getMonth()!==m?'out':''} ${k===td?'today':''} ${key?'key':''} ${kt?'kt':''}" data-d="${k}">${inner}</div>`;
+  }
+  $('#view').innerHTML=`<div class="grid">${h}</div>`;
+  bindDays('.day.key');
+}
+
+function renderYear(){
+  const y0=cur.getMonth()>=9?cur.getFullYear():cur.getFullYear()-1;
+  $('#title').textContent=`окт ${y0} — сен ${y0+1}`;
+  let h='';
+  for(let i=0;i<12;i++){
+    const ms=new Date(y0,9+i,1), y=ms.getFullYear(), m=ms.getMonth(), off=(ms.getDay()+6)%7, n=new Date(y,m+1,0).getDate();
+    let g=['п','в','с','ч','п','с','в'].map(d=>`<div class="wd" style="text-align:center;padding:0">${d}</div>`).join('')+'<div></div>'.repeat(off);
+    for(let d=1;d<=n;d++){
+      const k=ymd(new Date(y,m,d)), all=BYDATE[k]||[], ts=visible(all).filter(t=>!t.kt), kt=all.find(t=>t.kt);
+      let bg='';
+      if(ts.length){const cs=[...new Set(ts.map(colorOf))];bg=cs.length===1?cs[0]:`linear-gradient(135deg,${cs.map((c,j)=>`${c} ${j*100/cs.length}% ${(j+1)*100/cs.length}%`).join(',')})`}
+      g+=`<div class="md ${ts.length||kt?'key':''} ${kt?'kt':''}" data-d="${k}" style="${bg?`background:${bg}`:kt?'color:var(--ink)':''}">${d}</div>`;
+    }
+    h+=`<div class="mini"><h3 data-m="${y}-${m}">${MONTHS[m]} ${y}</h3><div class="grid">${g}</div></div>`;
+  }
+  $('#view').innerHTML=`<div class="year">${h}</div>`;
+  $('#view').querySelectorAll('.mini h3').forEach(e=>e.onclick=()=>{const [y,m]=e.dataset.m.split('-');cur=new Date(+y,+m,1);setView('month')});
+  bindDays('.md.key');
+}
+
+function bindDays(sel){
+  $('#view').querySelectorAll(sel).forEach(el=>{
+    el.onmouseenter=e=>showTip(el.dataset.d,e); el.onmousemove=moveTip; el.onmouseleave=hideTip;
+    el.onclick=()=>{hideTip();openDay(el.dataset.d)};
+  });
+}
+function showTip(k,e){
+  const all=BYDATE[k]||[], ts=visible(all);
+  $('#tip').innerHTML=`<div style="opacity:.7">${ru(k)}</div>`+ts.map(t=>t.kt?`<div><b>${esc(t.title)}</b></div>`:
+    `<div><i class="dot" style="background:${colorOf(t)}"></i><b>${esc(respOf(t))}</b></div>`).filter((v,i,a)=>a.indexOf(v)===i).join('');
+  $('#tip').classList.remove('hidden'); moveTip(e);
+}
+function moveTip(e){const t=$('#tip'),w=t.offsetWidth,h=t.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;t.style.left=x+'px';t.style.top=y+'px'}
+function hideTip(){$('#tip').classList.add('hidden')}
+
+function isLate(t){return t.due<ymd(new Date())&&!['Готово','Отменено'].includes(t.status)}
+
+function openDay(k){
+  const ts=visible(BYDATE[k]||[]);
+  $('#dtitle').textContent='Срок '+ru(k)+(ts.some(t=>t.kt)?' · '+ts.find(t=>t.kt).id:'');
+  $('#dbody').innerHTML=ts.filter(t=>!t.kt).map(t=>`
+    <div class="task" style="border-left-color:${colorOf(t)}">
+      <h4>${esc(t.id)}. ${esc(t.title)}</h4>
+      <dl class="meta">
+        <dt>Ответственный</dt><dd><i class="dot" style="background:${colorOf(t)}"></i> ${esc(respOf(t))}</dd>
+        ${t.co?`<dt>Соисполнители</dt><dd>${esc(t.co)}</dd>`:''}
+        <dt>Период</dt><dd>${ru(t.start)} — ${ru(t.due)}</dd>
+        <dt>Статус</dt><dd><span class="badge">${esc(t.status||'—')}</span> ${isLate(t)?'<span class="badge late">просрочено</span>':''}</dd>
+        ${t.comment?`<dt>Комментарий</dt><dd>${esc(t.comment)}</dd>`:''}
+        ${t.note?`<dt>Пометка</dt><dd>${esc(t.note)}</dd>`:''}
+      </dl>
+      <div class="cms" data-t="${esc(t.id)}"></div>
+    </div>`).join('')||'<p>На эту дату только контрольная точка.</p>';
+  $('#dbody').querySelectorAll('.cms').forEach(drawComments);
+  $('#dlg').showModal();
+}
+
+function liveList(id){return (COMMENTS[id]||[]).filter(c=>!c.del).sort((a,b)=>a.ts-b.ts)}
+function drawComments(box){
+  const id=box.dataset.t, list=liveList(id);
+  box.innerHTML=`<h5>Комментарии (${list.length})</h5>`+list.map(c=>`<div class="cm"><small>${esc(c.a)} · ${new Date(c.ts).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'})}</small>${esc(c.t)}<button class="x" data-c="${c.id}" title="Удалить">×</button></div>`).join('')+
+    `<textarea placeholder="Написать комментарий…"></textarea><div class="row"><button class="btn">Сохранить</button><span class="st"></span></div>`;
+  box.querySelector('.btn').onclick=async()=>{
+    const ta=box.querySelector('textarea'), txt=ta.value.trim(); if(!txt) return;
+    (COMMENTS[id]=COMMENTS[id]||[]).push({id:crypto.randomUUID(),a:USER,t:txt,ts:Date.now()});
+    await persist(); drawComments(box); box.querySelector('.st').textContent=syncOn()?'Сохранено и отправлено':'Сохранено в этом браузере';
+  };
+  box.querySelectorAll('.x').forEach(b=>b.onclick=async()=>{
+    if(!confirmDel(b)) return;
+    const c=(COMMENTS[id]||[]).find(x=>x.id===b.dataset.c); if(c){c.del=true;c.t='';} await persist(); drawComments(box);
+  });
+}
+function confirmDel(b){if(b.dataset.sure){return true}b.dataset.sure=1;b.textContent='удалить?';b.style.fontSize='11px';setTimeout(()=>{b.textContent='×';delete b.dataset.sure;b.style.fontSize=''},2500);return false}
+
+/* хранение комментариев */
+async function encJSON(obj){return aesEnc(KEY,enc.encode(JSON.stringify(obj)))}
+async function decJSON(o){return JSON.parse(dec.decode(await aesDec(KEY,o.iv,o.ct)))}
+async function readLocal(){const s=ls.get('strat.c');if(!s)return{};try{return await decJSON(JSON.parse(s))}catch(e){return{}}}
+function merge(a,b){const out={};for(const src of [a,b])for(const [k,list] of Object.entries(src||{})){const m=new Map((out[k]||[]).map(c=>[c.id,c]));list.forEach(c=>{const o=m.get(c.id);m.set(c.id,o&&o.del?o:c)});out[k]=[...m.values()]}return out}
+async function persist(){ls.set('strat.c',JSON.stringify(await encJSON(COMMENTS)));if(syncOn())await syncPush()}
+
+let SYNC=null;
+function syncOn(){return !!SYNC}
+async function loadSync(){const s=ls.get('strat.sync');if(!s){SYNC=null;return}try{SYNC=await decJSON(JSON.parse(s))}catch(e){SYNC=null}}
+function st(t,c){const e=$('#syncst');e.textContent=t;e.className='sync '+(c||'')}
+const api=p=>`https://api.github.com/repos/${SYNC.repo}/contents/${p}`;
+async function ghGet(){
+  const r=await fetch(api(SYNC.path)+'?t='+Date.now(),{headers:{Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json'},cache:'no-store'});
+  if(r.status===404)return{sha:null,data:{}};
+  if(!r.ok)throw new Error('GitHub '+r.status);
+  const j=await r.json(), txt=dec.decode(ub64(j.content.replace(/\n/g,'')));
+  return {sha:j.sha,data:await decJSON(JSON.parse(txt))};
+}
+async function syncPull(){
+  await loadSync();
+  if(!SYNC){
+    try{const r=await fetch('comments.enc.json?t='+Date.now(),{cache:'no-store'});if(r.ok){COMMENTS=merge(await decJSON(await r.json()),COMMENTS)}}catch(e){}
+    st('Комментарии: этот браузер');return;
+  }
+  try{st('Синхронизация…');const {data}=await ghGet();COMMENTS=merge(data,COMMENTS);ls.set('strat.c',JSON.stringify(await encJSON(COMMENTS)));st('Комментарии: GitHub ✓','ok')}
+  catch(e){st('GitHub недоступен: '+e.message,'bad')}
+}
+async function syncPush(){
+  for(let i=0;i<3;i++){
+    try{
+      st('Отправка…');
+      const {sha,data}=await ghGet(); COMMENTS=merge(data,COMMENTS);
+      const body={message:'comments update',content:btoa(JSON.stringify(await encJSON(COMMENTS)))};
+      if(sha)body.sha=sha;
+      const r=await fetch(api(SYNC.path),{method:'PUT',headers:{Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json'},body:JSON.stringify(body)});
+      if(r.status===409||r.status===422)continue;
+      if(!r.ok)throw new Error('GitHub '+r.status);
+      ls.set('strat.c',JSON.stringify(await encJSON(COMMENTS)));st('Комментарии: GitHub ✓','ok');return;
+    }catch(e){st('Не отправлено: '+e.message,'bad');return}
+  }
+  st('Конфликт, попробуйте ещё раз','bad');
+}
+
+/* настройки */
+$('#setbtn').onclick=async()=>{await loadSync();$('#srepo').value=SYNC?.repo||'rinatvisual/rinatvisual.github.io';$('#spath').value=SYNC?.path||'strat/comments.enc.json';$('#stok').value=SYNC?.token||'';$('#sst').textContent='';$('#sdlg').showModal()};
+$('#sclose').onclick=()=>$('#sdlg').close();
+$('#ssave').onclick=async()=>{
+  const repo=$('#srepo').value.trim(),path=$('#spath').value.trim(),token=$('#stok').value.trim();
+  if(!repo||!path||!token){$('#sst').textContent='Заполните все поля';return}
+  SYNC={repo,path,token}; ls.set('strat.sync',JSON.stringify(await encJSON(SYNC)));
+  $('#sst').textContent='Проверяю…'; await syncPush(); $('#sst').textContent=$('#syncst').textContent;
+};
+$('#soff').onclick=()=>{ls.del('strat.sync');SYNC=null;st('Комментарии: этот браузер');$('#sst').textContent='Синхронизация отключена'};
+$('#sexp').onclick=async()=>{const blob=new Blob([JSON.stringify(await encJSON(COMMENTS))],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comments.enc.json';a.click()};
+$('#simp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{COMMENTS=merge(COMMENTS,await decJSON(JSON.parse(await f.text())));await persist();$('#sst').textContent='Загружено';render()}catch(_){$('#sst').textContent='Файл не подходит к этому ключу'}};
+
+/* навигация */
+function setView(v){view=v;$('#vm').classList.toggle('on',v==='month');$('#vy').classList.toggle('on',v==='year');render()}
+$('#vm').onclick=()=>setView('month'); $('#vy').onclick=()=>setView('year');
+$('#prev').onclick=()=>{cur=view==='month'?new Date(cur.getFullYear(),cur.getMonth()-1,1):new Date(cur.getFullYear()-1,cur.getMonth(),1);render()};
+$('#next').onclick=()=>{cur=view==='month'?new Date(cur.getFullYear(),cur.getMonth()+1,1):new Date(cur.getFullYear()+1,cur.getMonth(),1);render()};
+$('#today').onclick=()=>{const n=new Date();cur=new Date(n.getFullYear(),n.getMonth(),1);render()};
+$('#dclose').onclick=()=>$('#dlg').close();
+document.addEventListener('keydown',e=>{if($('#app').classList.contains('hidden')||document.querySelector('dialog[open]')||e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowLeft')$('#prev').click();if(e.key==='ArrowRight')$('#next').click()});
+$('#outbtn').onclick=()=>{ss.del('strat.k');ss.del('strat.u');location.reload()};
+
+$('#lform').onsubmit=async e=>{
+  e.preventDefault(); $('#lerr').textContent=''; $('#lbtn').disabled=true; $('#lbtn').textContent='Проверяю…';
+  try{await login($('#lu').value,$('#lp').value)}catch(err){$('#lerr').textContent=err.message}
+  $('#lbtn').disabled=false; $('#lbtn').textContent='Войти';
+};
+(async()=>{const k=ss.get('strat.k'),u=ss.get('strat.u');if(k&&u){try{await open(ub64(k),u)}catch(e){ss.del('strat.k')}}})();
+</script>
+</body>
+</html>
