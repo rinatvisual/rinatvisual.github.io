@@ -60,7 +60,13 @@ header .who{color:var(--muted);font-size:13px}
 .wd{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:0 4px}
 .day{min-height:96px;border:1px solid var(--line);border-radius:10px;padding:6px;background:var(--card);position:relative;display:flex;flex-direction:column;gap:3px;overflow:hidden}
 .day.out{opacity:.35}
-.day.today .num{background:var(--danger);color:#fff;border-radius:6px;padding:0 6px}
+.day.today .num{background:var(--accent);color:#fff;border-radius:6px;padding:0 6px}
+.cmc{position:absolute;right:5px;bottom:4px;font-size:11px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:2px}
+.mini .md{position:relative}
+.mini .md.hc::after{content:'';position:absolute;top:1px;right:1px;width:6px;height:6px;border-radius:50%;background:var(--accent);border:1px solid var(--card)}
+.ktkey b{background:var(--accent);color:#fff;border-radius:5px;padding:0 5px;font-size:11px}
+.ktkey .ci{color:var(--accent);font-weight:700}
+.cmn{color:var(--accent);font-weight:700;font-size:12px;white-space:nowrap}
 .day.key{cursor:pointer}
 .day.key:hover{border-color:var(--accent)}
 .day.kt{box-shadow:inset 0 0 0 2px var(--ink)}
@@ -195,6 +201,8 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
       <h3>Ответственные</h3>
       <div id="legend"></div>
       <div class="ktkey"><i></i> Контрольная точка</div>
+      <div class="ktkey"><b>5</b> Сегодня</div>
+      <div class="ktkey"><span class="ci">💬 2</span> Есть комментарии (сколько)</div>
       <div class="hint">Нажмите на имя, чтобы показать только его сроки. Дата в календаре — срок задачи.</div>
     </aside>
   </div>
@@ -268,8 +276,10 @@ async function open(raw,u,data){
   legend(); render(); syncPull();
 }
 
+const RENAME={'Анна Валерьевна':'Анна Косурина'};
+const rn=n=>RENAME[n]||n;
 function applyEdits(){
-  TASKS=BASE.map(b=>{const e=EDITS[b.id];if(!e||e.reset)return {...b};return {...b,resp:e.resp,start:e.start,due:e.due,edited:e}});
+  TASKS=BASE.map(b=>{const e=EDITS[b.id];if(!e||e.reset)return {...b};return {...b,resp:rn(e.resp),start:e.start,due:e.due,edited:e}});
   index();
   $('#people').innerHTML=[...new Set([...PEOPLE,...TASKS.map(t=>t.resp).filter(Boolean)])].map(n=>`<option value="${esc(n)}">`).join('');
 }
@@ -299,14 +309,14 @@ function legend(){
 function render(){ $('.calbar').querySelectorAll('#prev,#next,#today,#title').forEach(e=>e.classList.toggle('hidden',view==='list')); view==='month'?renderMonth():view==='year'?renderYear():renderList() }
 
 function renderList(){
-  let h='<div class="tblw"><table class="tbl"><thead><tr><th>№</th><th>Задача</th><th style="width:210px">Ответственный</th><th style="width:140px">Начало</th><th style="width:140px">Срок</th><th>Статус</th></tr></thead><tbody>';
+  let h='<div class="tblw"><table class="tbl"><thead><tr><th>№</th><th>Задача</th><th style="width:210px">Ответственный</th><th style="width:140px">Начало</th><th style="width:140px">Срок</th><th>Статус</th><th>💬</th></tr></thead><tbody>';
   TASKS.forEach(t=>{
-    if(t.kt){h+=`<tr class="ktr"><td>${esc(t.id)}</td><td colspan="5">${esc(t.title)}</td></tr>`;return}
+    if(t.kt){h+=`<tr class="ktr"><td>${esc(t.id)}</td><td colspan="6">${esc(t.title)}</td></tr>`;return}
     if(OFF.has(respOf(t)))return;
     h+=`<tr class="${t.edited?'chg':''}" data-id="${esc(t.id)}"><td>${esc(t.id)}</td><td>${esc(t.title)}</td>
       <td><div class="rs"><i class="dot" style="background:${colorOf(t)}"></i><input list="people" data-f="resp" value="${esc(t.resp)}" placeholder="${NONE}"></div></td>
       <td><input type="date" data-f="start" value="${t.start||''}"></td><td><input type="date" data-f="due" value="${t.due||''}"></td>
-      <td><span class="badge">${esc(t.status||'—')}</span>${isLate(t)?' <span class="badge late">просрочено</span>':''}</td></tr>`;
+      <td><span class="badge">${esc(t.status||'—')}</span>${isLate(t)?' <span class="badge late">просрочено</span>':''}</td><td>${liveList(t.id).length?`<span class="cmn">💬 ${liveList(t.id).length}</span>`:''}</td></tr>`;
   });
   $('#view').innerHTML=h+'</tbody></table></div><p class="hint">Изменения сохраняются сразу. Изменённые строки отмечены синей полосой слева.</p>';
   $('#view').querySelectorAll('tr[data-id] input').forEach(inp=>inp.onchange=async()=>{
@@ -369,6 +379,7 @@ function renderMonth(){
     inner+=ts.slice(0,3).map(t=>`<span class="chip" style="background:${colorOf(t)}">${esc(surname(respOf(t)))}</span>`).join('');
     if(ts.length>3) inner+=`<span class="more">+ещё ${ts.length-3}</span>`;
     inner+=`<span class="dots">${ts.map(t=>`<i class="dot" style="background:${colorOf(t)}"></i>`).join('')}</span>`;
+    const nc=dayComments(ts); if(nc) inner+=`<span class="cmc" title="Комментариев: ${nc}">💬 ${nc}</span>`;
     h+=`<div class="day ${d.getMonth()!==m?'out':''} ${k===td?'today':''} ${key?'key':''} ${kt?'kt':''}" data-d="${k}">${inner}</div>`;
   }
   $('#view').innerHTML=`<div class="grid">${h}</div>`;
@@ -386,7 +397,7 @@ function renderYear(){
       const k=ymd(new Date(y,m,d)), all=BYDATE[k]||[], ts=visible(all).filter(t=>!t.kt), kt=all.find(t=>t.kt);
       let bg='';
       if(ts.length){const cs=[...new Set(ts.map(colorOf))];bg=cs.length===1?cs[0]:`linear-gradient(135deg,${cs.map((c,j)=>`${c} ${j*100/cs.length}% ${(j+1)*100/cs.length}%`).join(',')})`}
-      g+=`<div class="md ${ts.length||kt?'key':''} ${kt?'kt':''}" data-d="${k}" style="${bg?`background:${bg}`:kt?'color:var(--ink)':''}">${d}</div>`;
+      g+=`<div class="md ${ts.length||kt?'key':''} ${kt?'kt':''} ${dayComments(ts)?'hc':''}" data-d="${k}" style="${bg?`background:${bg}`:kt?'color:var(--ink)':''}">${d}</div>`;
     }
     h+=`<div class="mini"><h3 data-m="${y}-${m}">${MONTHS[m]} ${y}</h3><div class="grid">${g}</div></div>`;
   }
@@ -403,7 +414,8 @@ function bindDays(sel){
 }
 function showTip(k,e){
   const all=BYDATE[k]||[], ts=visible(all);
-  $('#tip').innerHTML=`<div style="opacity:.7">${ru(k)}</div>`+ts.map(t=>t.kt?`<div><b>${esc(t.title)}</b></div>`:
+  const nc=dayComments(ts.filter(t=>!t.kt));
+  $('#tip').innerHTML=`<div style="opacity:.7">${ru(k)}${nc?' · 💬 '+nc:''}</div>`+ts.map(t=>t.kt?`<div><b>${esc(t.title)}</b></div>`:
     `<div><i class="dot" style="background:${colorOf(t)}"></i><b>${esc(respOf(t))}</b></div>`).filter((v,i,a)=>a.indexOf(v)===i).join('');
   $('#tip').classList.remove('hidden'); moveTip(e);
 }
@@ -449,6 +461,7 @@ function openDay(k){
   if(!$('#dlg').open)$('#dlg').showModal();
 }
 
+function dayComments(ts){return ts.filter(t=>!t.kt).reduce((n,t)=>n+liveList(t.id).length,0)}
 function liveList(id){return (COMMENTS[id]||[]).filter(c=>!c.del).sort((a,b)=>a.ts-b.ts)}
 function drawComments(box){
   const id=box.dataset.t, list=liveList(id);
@@ -457,11 +470,11 @@ function drawComments(box){
   box.querySelector('.btn').onclick=async()=>{
     const ta=box.querySelector('textarea'), txt=ta.value.trim(); if(!txt) return;
     (COMMENTS[id]=COMMENTS[id]||[]).push({id:crypto.randomUUID(),a:USER,t:txt,ts:Date.now()});
-    await persist(); drawComments(box); box.querySelector('.st').textContent=syncOn()?'Сохранено и отправлено':'Сохранено в этом браузере';
+    await persist(); drawComments(box); render(); box.querySelector('.st').textContent=syncOn()?'Сохранено и отправлено':'Сохранено в этом браузере';
   };
   box.querySelectorAll('.x').forEach(b=>b.onclick=async()=>{
     if(!confirmDel(b)) return;
-    const c=(COMMENTS[id]||[]).find(x=>x.id===b.dataset.c); if(c){c.del=true;c.t='';} await persist(); drawComments(box);
+    const c=(COMMENTS[id]||[]).find(x=>x.id===b.dataset.c); if(c){c.del=true;c.t='';} await persist(); drawComments(box); render();
   });
 }
 function confirmDel(b){if(b.dataset.sure){return true}b.dataset.sure=1;b.textContent='удалить?';b.style.fontSize='11px';setTimeout(()=>{b.textContent='×';delete b.dataset.sure;b.style.fontSize=''},2500);return false}
