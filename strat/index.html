@@ -261,7 +261,7 @@ async function login(u,p){
   const id=await sha('strat:'+u), ent=data.users.find(x=>x.u===id);
   if(!ent) throw new Error('Неверный логин или пароль');
   const base=await crypto.subtle.importKey('raw',enc.encode(u+':'+p),'PBKDF2',false,['deriveKey']);
-  const kek=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:ub64(ent.salt),iterations:data.iter},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const kek=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:ub64(ent.salt),iterations:ent.it||data.iter},base,{name:'AES-GCM',length:256},false,['decrypt']);
   let raw; try{raw=await aesDec(kek,ent.iv,ent.wk)}catch(_){throw new Error('Неверный логин или пароль')}
   ss.set('strat.k',b64(raw)); ss.set('strat.u',u);
   await open(raw,u,data);
@@ -496,7 +496,19 @@ function refresh(){applyEdits();legend();render()}
 
 let SYNC=null;
 function syncOn(){return !!SYNC}
-async function loadSync(){const s=ls.get('strat.sync');if(!s){SYNC=null;return}try{SYNC=await decJSON(JSON.parse(s))}catch(e){SYNC=null}}
+async function loadSync(){
+  const s=ls.get('strat.sync');
+  if(s){try{SYNC=await decJSON(JSON.parse(s));return}catch(e){}}
+  // общая настройка из репозитория (токен зашифрован ключом данных)
+  try{const r=await fetch('sync.enc.json?t='+Date.now(),{cache:'no-store'});if(r.ok){SYNC=await decJSON(await r.json());ls.set('strat.sync',JSON.stringify(await encJSON(SYNC)));return}}catch(e){}
+  SYNC=null;
+}
+async function ghPut(path,obj){
+  const h={Authorization:'Bearer '+SYNC.token,Accept:'application/vnd.github+json'};
+  const g=await fetch(api(path)+'?t='+Date.now(),{headers:h,cache:'no-store'}); const sha=g.ok?(await g.json()).sha:null;
+  const body={message:'strat: sync settings',content:btoa(JSON.stringify(await encJSON(obj)))}; if(sha)body.sha=sha;
+  const r=await fetch(api(path),{method:'PUT',headers:h,body:JSON.stringify(body)}); if(!r.ok)throw new Error('GitHub '+r.status);
+}
 function st(t,c){const e=$('#syncst');e.textContent=t;e.className='sync '+(c||'')}
 const api=p=>`https://api.github.com/repos/${SYNC.repo}/contents/${p}`;
 async function ghGet(){
@@ -510,7 +522,7 @@ async function syncPull(){
   await loadSync();
   if(!SYNC){
     try{const r=await fetch('comments.enc.json?t='+Date.now(),{cache:'no-store'});if(r.ok){absorb(await decJSON(await r.json()));refresh()}}catch(e){}
-    st('Данные: этот браузер');return;
+    st('⚠ Только в этом браузере — настройте «Хранение»','bad');return;
   }
   try{st('Синхронизация…');const {data}=await ghGet();absorb(data);refresh();ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));st('Синхронизировано с GitHub ✓','ok')}
   catch(e){st('GitHub недоступен: '+e.message,'bad')}
@@ -538,9 +550,13 @@ $('#ssave').onclick=async()=>{
   const repo=$('#srepo').value.trim(),path=$('#spath').value.trim(),token=$('#stok').value.trim();
   if(!repo||!path||!token){$('#sst').textContent='Заполните все поля';return}
   SYNC={repo,path,token}; ls.set('strat.sync',JSON.stringify(await encJSON(SYNC)));
-  $('#sst').textContent='Проверяю…'; await syncPush(); $('#sst').textContent=$('#syncst').textContent;
+  $('#sst').textContent='Проверяю…'; await syncPush();
+  if($('#syncst').classList.contains('ok')){
+    try{await ghPut(path.replace(/[^/]*$/,'')+'sync.enc.json',SYNC);$('#sst').textContent='Готово: теперь все данные хранятся на GitHub, на любом устройстве после входа подключится само'}
+    catch(e){$('#sst').textContent='Комментарии сохранены, но общую настройку записать не вышло: '+e.message}
+  } else $('#sst').textContent=$('#syncst').textContent;
 };
-$('#soff').onclick=()=>{ls.del('strat.sync');SYNC=null;st('Данные: этот браузер');$('#sst').textContent='Синхронизация отключена'};
+$('#soff').onclick=()=>{ls.del('strat.sync');SYNC=null;st('⚠ Только в этом браузере — настройте «Хранение»','bad');$('#sst').textContent='Синхронизация отключена'};
 $('#sexp').onclick=async()=>{const blob=new Blob([JSON.stringify(await encJSON(snapshot()))],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comments.enc.json';a.click()};
 $('#simp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{absorb(await decJSON(JSON.parse(await f.text())));await persist();$('#sst').textContent='Загружено';refresh()}catch(_){$('#sst').textContent='Файл не подходит к этому ключу'}};
 
@@ -552,6 +568,7 @@ $('#next').onclick=()=>{cur=view==='month'?new Date(cur.getFullYear(),cur.getMon
 $('#today').onclick=()=>{const n=new Date();cur=new Date(n.getFullYear(),n.getMonth(),1);render()};
 $('#dclose').onclick=()=>$('#dlg').close();
 document.addEventListener('keydown',e=>{if($('#app').classList.contains('hidden')||document.querySelector('dialog[open]')||e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowLeft')$('#prev').click();if(e.key==='ArrowRight')$('#next').click()});
+window.addEventListener('focus',()=>{if(KEY&&SYNC)syncPull()});
 $('#outbtn').onclick=()=>{ss.del('strat.k');ss.del('strat.u');location.reload()};
 
 $('#lform').onsubmit=async e=>{

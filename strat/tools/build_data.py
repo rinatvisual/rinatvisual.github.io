@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 
-ITER = 310000
+ITER = 600000
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data.enc.json')
 b64 = lambda b: base64.b64encode(b).decode()
 ub64 = base64.b64decode
@@ -14,19 +14,19 @@ ub64 = base64.b64decode
 def uid(login):
     return hashlib.sha256(('strat:' + login.strip().lower()).encode()).hexdigest()
 
-def kek(login, pwd, salt):
-    k = PBKDF2HMAC(hashes.SHA256(), 32, salt, ITER)
+def kek(login, pwd, salt, it=ITER):
+    k = PBKDF2HMAC(hashes.SHA256(), 32, salt, it)
     return k.derive((login.strip().lower() + ':' + pwd).encode())
 
 def wrap(dk, login, pwd):
     salt, iv = os.urandom(16), os.urandom(12)
-    return {'u': uid(login), 'salt': b64(salt), 'iv': b64(iv),
+    return {'u': uid(login), 'it': ITER, 'salt': b64(salt), 'iv': b64(iv),
             'wk': b64(AESGCM(kek(login, pwd, salt)).encrypt(iv, dk, None))}
 
-def unwrap(users, login, pwd):
+def unwrap(users, login, pwd, it0=ITER):
     for e in users:
         if e['u'] == uid(login):
-            return AESGCM(kek(login, pwd, ub64(e['salt']))).decrypt(ub64(e['iv']), ub64(e['wk']), None)
+            return AESGCM(kek(login, pwd, ub64(e['salt']), e.get('it', it0))).decrypt(ub64(e['iv']), ub64(e['wk']), None)
     raise SystemExit('Логин admin не найден в data.enc.json')
 
 def d(v):
@@ -57,7 +57,7 @@ a = ap.parse_args()
 al, ap_ = a.admin.split(':', 1)
 old = json.load(open(OUT)) if os.path.exists(OUT) else None
 if old:
-    dk, users = unwrap(old['users'], al, ap_), old['users']
+    dk, users = unwrap(old['users'], al, ap_, old['iter']), old['users']
 else:
     dk = AESGCM.generate_key(256)
     users = [wrap(dk, al, ap_)]
