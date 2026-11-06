@@ -32,18 +32,24 @@ def unwrap(users, login, pwd, it0=ITER):
 def d(v):
     return v.strftime('%Y-%m-%d') if isinstance(v, datetime.datetime) else None
 
+# контрольные точки (из прежней версии плана) — для рамок в календаре
+KT = [('КТ1', '2026-11-01'), ('КТ2', '2027-01-15'), ('КТ3', '2027-03-01'), ('КТ4', '2027-06-01'), ('КТ5', '2027-09-01')]
+
 def read_tasks(path):
+    # столбцы: A задача, B ответственный, C исполнитель, D срок, E комментарий, F статус, G комментарий, H контроль
     ws = openpyxl.load_workbook(path, data_only=True)['Гант']
     tasks = []
-    for row, r in enumerate(ws.iter_rows(min_row=5, max_col=10, values_only=True), start=5):
-        num, title, resp, co, start, due, note, status, comment, ctrl = r
-        if not title or not due or str(num).strip() == '—':
+    for row, r in enumerate(ws.iter_rows(min_row=5, max_col=8, values_only=True), start=5):
+        title, resp, co, due, comment, status, note, ctrl = r
+        if not title or not d(due):
             continue
-        tasks.append({'row': row, 'id': str(num).strip(), 'title': str(title).strip(), 'resp': resp or '',
-                      'co': co or '', 'start': d(start), 'due': d(due), 'note': note or '',
-                      'status': status or '', 'comment': comment or '', 'ctrl': ctrl or '',
-                      'kt': str(num).startswith('КТ')})
-    return tasks
+        tasks.append({'row': row, 'id': str(len(tasks) + 1), 'title': str(title).strip(), 'resp': str(resp or '').strip(),
+                      'co': co or '', 'start': None, 'due': d(due), 'comment': comment or '', 'note': note or '',
+                      'status': status or '', 'ctrl': ctrl or '', 'kt': False})
+    for i, (k, dt) in enumerate(KT, 1):
+        tasks.append({'id': k, 'title': f'Контрольная точка {i} — {dt[8:]}.{dt[5:7]}.{dt[:4]}', 'resp': '', 'co': '', 'start': None,
+                      'due': dt, 'comment': '', 'note': '', 'status': '', 'ctrl': '', 'kt': True})
+    return sorted(tasks, key=lambda t: (t['due'], not t['kt']))
 
 def read_people(path):
     ws = openpyxl.load_workbook(path, data_only=True)['Справочник']
@@ -67,7 +73,7 @@ for x in a.add:
 for l in a.remove:
     users = [e for e in users if e['u'] != uid(l)]
 
-payload = json.dumps({'tasks': read_tasks(a.xlsx), 'people': read_people(a.xlsx), 'built': datetime.date.today().isoformat()}, ensure_ascii=False)
+payload = json.dumps({'tasks': read_tasks(a.xlsx), 'people': read_people(a.xlsx), 'built': datetime.date.today().isoformat(), 'gen': b64(os.urandom(9))}, ensure_ascii=False)
 iv = os.urandom(12)
 out = {'v': 1, 'iter': ITER, 'users': users, 'iv': b64(iv), 'ct': b64(AESGCM(dk).encrypt(iv, payload.encode(), None))}
 json.dump(out, open(OUT, 'w'))
