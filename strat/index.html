@@ -82,7 +82,16 @@ header .who{color:var(--muted);font-size:13px}
 .dim{opacity:.18}
 
 /* year */
-.year{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.year{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.mh{display:flex;align-items:flex-end;gap:8px;margin:0 0 6px}
+.mh h3{flex:1;margin:0!important;padding-bottom:6px}
+.pf{display:flex;gap:6px}
+.pf label{width:64px}
+.pf span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:1px}
+.pf input{padding:4px 6px;font-size:13px;font-weight:600}
+.pf input:focus{border-color:var(--accent)}
+.pf .good{color:var(--ok)}
+.pf .bad{color:var(--danger)}
 .mini h3{font-size:13px;margin:0 0 6px;text-transform:capitalize;cursor:pointer}
 .mini .grid{gap:2px}
 .mini .md{aspect-ratio:1;border-radius:4px;font-size:10px;display:grid;place-items:center;color:var(--muted)}
@@ -131,7 +140,10 @@ textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--line)
 .sync{font-size:12px;color:var(--muted)}
 .sync.ok{color:var(--ok)}
 .sync.bad{color:var(--danger)}
-.edit{margin-top:10px;display:grid;grid-template-columns:1.6fr 1fr;gap:8px}
+.edit{margin-top:10px;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:8px}
+.edit select,.tbl select,.pf input{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--soft);outline:none;color:var(--ink)}
+.tbl select{padding:4px 6px;background:transparent;border-color:transparent;min-width:118px}
+.tbl select:hover{border-color:var(--line)}
 .edit label span{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
 .edit input{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--soft);outline:none}
 .edit input:focus{border-color:var(--accent)}
@@ -248,7 +260,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const ss={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},del(k){try{sessionStorage.removeItem(k)}catch(e){}}};
 
-let GEN='', KEY=null, USER='', BASE=[], TASKS=[], PEOPLE=[], COLORS={}, BYDATE={}, COMMENTS={}, EDITS={}, OFF=new Set(), OPEN_DAY=null;
+let PF={}, GEN='', KEY=null, USER='', BASE=[], TASKS=[], PEOPLE=[], COLORS={}, BYDATE={}, COMMENTS={}, EDITS={}, OFF=new Set(), OPEN_DAY=null;
 let cur=new Date(), view='month';
 
 async function sha(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -273,7 +285,7 @@ async function open(raw,u,data){
   KEY=await importKey(raw); USER=u; data=data||await loadData();
   const pl=JSON.parse(dec.decode(await aesDec(KEY,data.iv,data.ct)));
   BASE=pl.tasks; GEN=pl.gen||''; PEOPLE=(pl.people||[]).map(rn);
-  ({c:COMMENTS,e:EDITS}=await readLocal()); applyEdits();
+  ({c:COMMENTS,e:EDITS,pf:PF}=await readLocal()); applyEdits();
   $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
   $('#who').textContent=u;
   const now=new Date(); cur=new Date(now.getFullYear(),now.getMonth(),1);
@@ -283,7 +295,7 @@ async function open(raw,u,data){
 const RENAME={'Анна Валерьевна':'Анна Косурина'};
 const rn=n=>RENAME[n]||n;
 function applyEdits(){
-  TASKS=BASE.map(b=>{const e=EDITS[b.id];if(!e||e.reset)return {...b};return {...b,resp:rn(e.resp),start:e.start,due:e.due,edited:e}});
+  TASKS=BASE.map(b=>{const e=EDITS[b.id];if(!e||e.reset)return {...b};return {...b,resp:rn(e.resp),start:e.start,due:e.due,status:e.status??b.status,edited:e}});
   index();
   $('#people').innerHTML=[...new Set([...PEOPLE,...TASKS.map(t=>t.resp).filter(Boolean)])].map(n=>`<option value="${esc(n)}">`).join('');
 }
@@ -310,7 +322,8 @@ function legend(){
   });
 }
 
-function render(){ $('.calbar').querySelectorAll('#prev,#next,#today,#title').forEach(e=>e.classList.toggle('hidden',view==='list')); view==='month'?renderMonth():view==='year'?renderYear():renderList() }
+function render(){ const ae=document.activeElement, fk=ae&&ae.dataset&&ae.dataset.pm?`[data-pm="${ae.dataset.pm}"][data-k="${ae.dataset.k}"]`:null; const val=fk?ae.value:null; _render(); if(fk){const el=$('#view').querySelector(fk);if(el){el.value=val;el.focus();}} }
+function _render(){ $('.calbar').querySelectorAll('#prev,#next,#today,#title').forEach(e=>e.classList.toggle('hidden',view==='list')); view==='month'?renderMonth():view==='year'?renderYear():renderList() }
 
 function renderList(){
   let h='<div class="tblw"><table class="tbl"><thead><tr><th>№</th><th>Задача</th><th style="width:210px">Ответственный</th><th style="width:140px">Срок</th><th>Статус</th><th>'+ICON+'</th></tr></thead><tbody>';
@@ -320,19 +333,19 @@ function renderList(){
     h+=`<tr class="${t.edited?'chg':''}" data-id="${esc(t.id)}"><td>${esc(t.id)}</td><td>${esc(t.title)}</td>
       <td><div class="rs"><i class="dot" style="background:${colorOf(t)}"></i><input list="people" data-f="resp" value="${esc(t.resp)}" placeholder="${NONE}"></div></td>
       <td><input type="date" data-f="due" value="${t.due||''}"></td>
-      <td><span class="badge">${esc(t.status||'—')}</span>${isLate(t)?' <span class="badge late">просрочено</span>':''}</td><td>${liveList(t.id).length?`<span class="cmn">${ICON} ${liveList(t.id).length}</span>`:''}</td></tr>`;
+      <td><div class="rs">${statusSel(t.status)}${isLate(t)?'<span class="badge late">просрочено</span>':''}</div></td><td>${liveList(t.id).length?`<span class="cmn">${ICON} ${liveList(t.id).length}</span>`:''}</td></tr>`;
   });
   $('#view').innerHTML=h+'</tbody></table></div><p class="hint">Изменения сохраняются сразу. Изменённые строки отмечены синей полосой слева.</p>';
-  $('#view').querySelectorAll('tr[data-id] input').forEach(inp=>inp.onchange=async()=>{
+  $('#view').querySelectorAll('tr[data-id] input,tr[data-id] select').forEach(inp=>inp.onchange=async()=>{
     const tr=inp.closest('tr'), id=tr.dataset.id, v=f=>tr.querySelector(`[data-f="${f}"]`).value.trim();
     if(!v('due')){inp.value=TASKS.find(t=>t.id===id).due;return}
-    await saveEdit(id,{resp:v('resp'),start:null,due:v('due')});
+    await saveEdit(id,{resp:v('resp'),start:null,due:v('due'),status:v('status')});
   });
 }
 
 async function saveEdit(id,vals){
   const b=BASE.find(t=>t.id===id);
-  const same=b.resp===vals.resp&&b.start===vals.start&&b.due===vals.due;
+  const same=b.resp===vals.resp&&b.start===vals.start&&b.due===vals.due&&(b.status||'')===(vals.status||'');
   EDITS[id]=same?{reset:true,a:USER,ts:Date.now()}:{...vals,a:USER,ts:Date.now()};
   applyEdits(); legend(); await persist(); render();
   if($('#dlg').open&&OPEN_DAY)openDay(BASE.find(t=>t.id===id)&&TASKS.find(t=>t.id===id).due||OPEN_DAY);
@@ -353,6 +366,7 @@ async function exportXlsx(){
     const p='xl/worksheets/sheet1.xml'; let xml=await zip.file(p).async('string');
     TASKS.filter(x=>!x.kt&&x.row).forEach(x=>{
       xml=setCell(xml,'B'+x.row,x.resp?`<is><t>${xmlEsc(x.resp)}</t></is>`:null,'inlineStr');
+      xml=setCell(xml,'F'+x.row,x.status?`<is><t>${xmlEsc(x.status)}</t></is>`:null,'inlineStr');
       xml=setCell(xml,'D'+x.row,x.due?`<v>${serial(x.due)}</v>`:null);
     });
     zip.file(p,xml);
@@ -402,11 +416,17 @@ function renderYear(){
       if(ts.length){const cs=[...new Set(ts.map(colorOf))];bg=cs.length===1?cs[0]:`linear-gradient(135deg,${cs.map((c,j)=>`${c} ${j*100/cs.length}% ${(j+1)*100/cs.length}%`).join(',')})`}
       g+=`<div class="md ${ts.length||kt?'key':''} ${kt?'kt':''} ${dayComments(ts)?'hc':''}" data-d="${k}" style="${bg?`background:${bg}`:kt?'color:var(--ink)':''}">${d}</div>`;
     }
-    h+=`<div class="mini"><h3 data-m="${y}-${m}">${MONTHS[m]} ${y}</h3><div class="grid">${g}</div></div>`;
+    const mk=`${y}-${String(m+1).padStart(2,'0')}`, pv=PF[mk]||{}, cls=pv.p!==''&&pv.p!=null&&pv.f!==''&&pv.f!=null?(+pv.f>=+pv.p?'good':'bad'):'';
+    h+=`<div class="mini"><div class="mh"><h3 data-m="${y}-${m}">${MONTHS[m]} ${y}</h3><div class="pf"><label><span>План</span><input inputmode="decimal" data-pm="${mk}" data-k="p" value="${esc(pv.p??'')}"></label><label><span>Факт</span><input inputmode="decimal" class="${cls}" data-pm="${mk}" data-k="f" value="${esc(pv.f??'')}"></label></div></div><div class="grid">${g}</div></div>`;
   }
   $('#view').innerHTML=`<div class="year">${h}</div>`;
   $('#view').querySelectorAll('.mini h3').forEach(e=>e.onclick=()=>{const [y,m]=e.dataset.m.split('-');cur=new Date(+y,+m,1);setView('month')});
   bindDays('.md.key');
+  $('#view').querySelectorAll('[data-pm]').forEach(inp=>inp.onchange=async()=>{
+    const k=inp.dataset.pm, v=inp.value.trim().replace(',','.');
+    if(v!==''&&isNaN(+v)){inp.value=(PF[k]||{})[inp.dataset.k]??'';return}
+    PF[k]={...(PF[k]||{}),[inp.dataset.k]:v,a:USER,ts:Date.now()}; await persist(); render();
+  });
 }
 
 function bindDays(sel){
@@ -425,6 +445,8 @@ function showTip(k,e){
 function moveTip(e){const t=$('#tip'),w=t.offsetWidth,h=t.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;t.style.left=x+'px';t.style.top=y+'px'}
 function hideTip(){$('#tip').classList.add('hidden')}
 
+const STATUSES=['Не начато','В работе','Готово','Под риском','Отменено'];
+function statusSel(v){const o=[...STATUSES];if(v&&!o.includes(v))o.unshift(v);return `<select data-f="status"><option value=""${v?'':' selected'}>—</option>${o.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('')}</select>`}
 function isLate(t){return t.due<ymd(new Date())&&!['Готово','Отменено'].includes(t.status)}
 
 function openDay(k){
@@ -443,21 +465,22 @@ function openDay(k){
         ${t.note?`<dt>Комментарий (2)</dt><dd>${esc(t.note)}</dd>`:''}
         ${t.edited?`<dt>Изменено</dt><dd><span class="badge ed">${esc(t.edited.a)} · ${new Date(t.edited.ts).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'})}</span> <button class="lnk" data-reset="${esc(t.id)}">вернуть как в Excel</button></dd>`:''}
       </dl>
-      <button class="lnk" data-edit="${esc(t.id)}" style="margin-top:8px">✎ Изменить срок / ответственного</button>
+      <button class="lnk" data-edit="${esc(t.id)}" style="margin-top:8px">✎ Изменить срок / ответственного / статус</button>
       <div class="edit hidden" data-form="${esc(t.id)}">
         <label><span>Ответственный</span><input list="people" data-f="resp" value="${esc(t.resp)}" placeholder="${NONE}"></label>
         <label><span>Срок</span><input type="date" data-f="due" value="${t.due||''}" required></label>
+        <label><span>Статус</span>${statusSel(t.status)}</label>
         <div class="row" style="grid-column:1/-1;margin:0"><button class="btn" data-save="${esc(t.id)}">Сохранить изменения</button><span class="st"></span></div>
       </div>
       <div class="cms" data-t="${esc(t.id)}"></div>
     </div>`).join('')||`<p>${ts.some(t=>t.kt)?'На эту дату только контрольная точка.':'Задач на эту дату нет.'}</p>`;
   $('#dbody').querySelectorAll('.cms').forEach(drawComments);
   $('#dbody').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>$(`[data-form="${CSS.escape(b.dataset.edit)}"]`).classList.toggle('hidden'));
-  $('#dbody').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{const t=BASE.find(x=>x.id===b.dataset.reset);saveEdit(t.id,{resp:t.resp,start:t.start,due:t.due})});
+  $('#dbody').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{const t=BASE.find(x=>x.id===b.dataset.reset);saveEdit(t.id,{resp:t.resp,start:t.start,due:t.due,status:t.status})});
   $('#dbody').querySelectorAll('[data-save]').forEach(b=>b.onclick=async()=>{
     const f=b.closest('.edit'), v=n=>f.querySelector(`[data-f="${n}"]`).value.trim();
     if(!v('due')){f.querySelector('.st').textContent='Укажите срок';return}
-    await saveEdit(b.dataset.save,{resp:v('resp'),start:null,due:v('due')});
+    await saveEdit(b.dataset.save,{resp:v('resp'),start:null,due:v('due'),status:v('status')});
   });
   if(!$('#dlg').open)$('#dlg').showModal();
 }
@@ -484,12 +507,12 @@ function confirmDel(b){if(b.dataset.sure){return true}b.dataset.sure=1;b.textCon
 async function encJSON(obj){return aesEnc(KEY,enc.encode(JSON.stringify(obj)))}
 async function decJSON(o){return JSON.parse(dec.decode(await aesDec(KEY,o.iv,o.ct)))}
 // хранилище: {c: комментарии по задачам, e: правки по задачам}; старый формат — только комментарии
-const norm=o=>o&&(o.c||o.e)?{c:o.c||{},e:o.e||{}}:{c:o||{},e:{}};
-async function readLocal(){const s=ls.get('strat.c');if(!s)return{c:{},e:{}};try{const o=await decJSON(JSON.parse(s));return o&&o.g===GEN?norm(o):{c:{},e:{}}}catch(e){return{c:{},e:{}}}}
+const norm=o=>o&&(o.c||o.e||o.pf)?{c:o.c||{},e:o.e||{},pf:o.pf||{}}:{c:o||{},e:{},pf:{}};
+async function readLocal(){const E={c:{},e:{},pf:{}};const s=ls.get('strat.c');if(!s)return E;try{const o=await decJSON(JSON.parse(s));return o&&o.g===GEN?norm(o):E}catch(e){return E}}
 function mergeC(a,b){const out={};for(const src of [a,b])for(const [k,list] of Object.entries(src||{})){const m=new Map((out[k]||[]).map(c=>[c.id,c]));list.forEach(c=>{const o=m.get(c.id);m.set(c.id,o&&o.del?o:c)});out[k]=[...m.values()]}return out}
 function mergeE(a,b){const out={...a};for(const [k,v] of Object.entries(b||{}))if(!out[k]||v.ts>out[k].ts)out[k]=v;return out}
-function absorb(o){if(!o||o.g!==GEN)return;o=norm(o);COMMENTS=mergeC(o.c,COMMENTS);EDITS=mergeE(o.e,EDITS)}
-const snapshot=()=>({g:GEN,c:COMMENTS,e:EDITS});
+function absorb(o){if(!o||o.g!==GEN)return;o=norm(o);COMMENTS=mergeC(o.c,COMMENTS);EDITS=mergeE(o.e,EDITS);PF=mergeE(o.pf,PF)}
+const snapshot=()=>({g:GEN,c:COMMENTS,e:EDITS,pf:PF});
 async function persist(){ls.set('strat.c',JSON.stringify(await encJSON(snapshot())));if(syncOn())await syncPush()}
 function refresh(){applyEdits();legend();render()}
 
