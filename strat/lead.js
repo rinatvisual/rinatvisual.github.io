@@ -139,6 +139,18 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .fst.last small,.fst.last b{color:var(--on-accent)}
 .fcv{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--accent);padding:4px 0}
 .lboxes{gap:12px}
+.funnels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;margin-top:16px}
+.funnels .funnel{width:100%}
+.funnel.side .fst{cursor:default}
+.funnel.side .fst:hover{border-color:var(--line)}
+.funnel.left .fst b{color:#16a34a}.funnel.right .fst b{color:#dc2626}
+:root[data-theme="dark"] .funnel.left .fst b{color:#4ade80}:root[data-theme="dark"] .funnel.right .fst b{color:#f87171}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .funnel.left .fst b{color:#4ade80}:root:not([data-theme="light"]) .funnel.right .fst b{color:#f87171}}
+.funnel.left .fcv{color:#16a34a}.funnel.right .fcv{color:#dc2626}
+.funnel.left .fst.last{background:color-mix(in srgb,#16a34a 14%,var(--card));border-color:#16a34a}
+.funnel.right .fst.last{background:color-mix(in srgb,#dc2626 12%,var(--card));border-color:#dc2626}
+.funnel.side .fst.last small{color:var(--muted)}
+@media (max-width:900px){.funnels{grid-template-columns:1fr}}
 .lbox2{border:1px dashed var(--edge);border-radius:12px;background:var(--card);padding:12px 14px;font-size:13.5px;max-width:none}
 .lbox2 b{font-family:var(--fb);font-size:13.5px;font-weight:700;color:var(--accent)}
 .ls h5{font-family:var(--fm);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink)}
@@ -298,7 +310,7 @@ window.renderLead=async function(){
   <section class="panel lsec">
     <h2>Воронка 26/27</h2><p class="sub">Нажмите на этап, чтобы перейти к связанной стрелке или отделу.</p>
     <div class="lboxes"><div class="lbox2"><b>${esc(LEAD.loop.title)}</b>${esc(LEAD.loop.text)}</div><div class="lbox2"><b>${esc(LEAD.chat.title)}</b>${esc(LEAD.chat.text)}</div></div>
-    <div class="funnel">${LEAD.funnel.map((f,i)=>`<button class="fst ${i===LEAD.funnel.length-1?'last':''}" data-f="${i}" style="width:min(100%,${Math.max(280,420-i*28)}px)"><small>${esc(f.name)}</small><b>${esc(f.num)}</b></button>${f.next?`<div class="fcv">↓ ${esc(f.next)}</div>`:''}`).join('')}</div>
+    <div class="funnels">${funnelCol('left')}<div class="funnel">${LEAD.funnel.map((f,i)=>`<button class="fst ${i===LEAD.funnel.length-1?'last':''}" data-f="${i}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(f.num)}</b></button>${f.next?`<div class="fcv">↓ ${esc(f.next)}</div>`:''}`).join('')}</div>${funnelCol('right')}</div>
   </section>`;
   box.querySelectorAll('[data-mod]').forEach(el=>{el.onclick=()=>openModule(el.dataset.mod);el.onkeydown=e=>{if(e.key==='Enter'&&!e.target.classList.contains('kwbtn'))openModule(el.dataset.mod)}});
   box.querySelectorAll('.kwbtn').forEach(btn=>{btn.onclick=e=>{e.stopPropagation();openKeyword(btn.dataset.kw)}});
@@ -314,7 +326,7 @@ window.renderLead=async function(){
     const order=['az','m1','m2','m34','m5','m6','m8','m7'];
     order.forEach((id,i)=>{const c=box.querySelector('#lcanvas .lcard.'+id);c&&c.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:320,delay:180+i*55,easing:E,fill:'backwards'})});
     box.querySelectorAll('#lsvg g, #lcanvas .epill, #lcanvas .bus, #vtog').forEach(el=>el.animate([{opacity:0},{opacity:1}],{duration:380,delay:180+order.length*55,easing:'ease',fill:'backwards'}));
-    box.querySelectorAll('.fst').forEach((f,i)=>f.animate([{opacity:0,transform:'scaleX(.92)'},{opacity:1,transform:'none'}],{duration:260,delay:300+i*60,easing:E,fill:'backwards'}));
+    box.querySelectorAll('.funnel').forEach(fn=>fn.querySelectorAll('.fst').forEach((f,i)=>f.animate([{opacity:0,transform:'scaleX(.92)'},{opacity:1,transform:'none'}],{duration:260,delay:300+i*60,easing:E,fill:'backwards'})));
   }
 };
 
@@ -456,6 +468,14 @@ function openEdge(eid){
   });
 }
 
+// боковые воронки: слева — зелёные цифры, справа — красные; конверсия считается из самих чисел
+function funnelCol(side){
+  const nums=(LEAD.funnelSides&&LEAD.funnelSides[side])||[]; if(!nums.length) return '';
+  const val=s=>+String(s).replace(/\D/g,'');
+  return `<div class="funnel side ${side}">${LEAD.funnel.map((f,i)=>{const n=nums[i]; if(n==null) return '';
+    const nx=nums[i+1], cv=nx!=null&&val(n)?Math.round(val(nx)/val(n)*100)+'%':'';
+    return `<div class="fst ${i===LEAD.funnel.length-1?'last':''}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(n)}</b></div>${cv?`<div class="fcv">↓ ${cv}</div>`:''}`}).join('')}</div>`;
+}
 function openStage(i){
   const f=LEAD.funnel[i], prev=LEAD.funnel[i-1];
   const c=f.concept&&LEAD.concepts.find(x=>x.name===f.concept), e=f.edge&&LEAD.edges.find(x=>x.id===f.edge);
