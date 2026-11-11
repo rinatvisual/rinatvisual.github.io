@@ -147,7 +147,6 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .srct{font-family:var(--fm);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink);margin-bottom:8px}
 .srcg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--edge);border-radius:14px;overflow:hidden;background:var(--card)}
 .srcr{display:grid;grid-template-rows:1fr 1fr;border-left:1.5px solid var(--edge);position:relative}
-.srcr .srcc{padding-right:44px}
 .srcr .srcc.c{border-top:1.5px solid var(--edge)}
 .srcc{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
 .srcc.a{justify-content:center}
@@ -155,10 +154,7 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .srcc b{font-size:28px;font-weight:700;letter-spacing:-.01em;color:var(--ink);line-height:1.15}
 .srcc.a b{font-size:34px}
 .srcc span{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--accent)}
-.srca{position:absolute;right:6px;top:15%;height:70%;width:24px;color:var(--accent)}
-.srcw.left .srcc b,.srcw.left .srcc span,.srcw.left .srca{color:#16a34a}
-.srcw.right .srcc b,.srcw.right .srcc span,.srcw.right .srca{color:#dc2626}
-:root[data-theme="dark"] .srcw.left .srcc b,:root[data-theme="dark"] .srcw.left .srcc span{color:#4ade80}
+.srcw.left .srcc b,.srcw.left .srcc span,.srcw.left .srcw.right .srcc b,.srcw.right .srcc span,.srcw.right :root[data-theme="dark"] .srcw.left .srcc b,:root[data-theme="dark"] .srcw.left .srcc span{color:#4ade80}
 :root[data-theme="dark"] .srcw.right .srcc b,:root[data-theme="dark"] .srcw.right .srcc span{color:#f87171}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .srcw.left .srcc b,:root:not([data-theme="light"]) .srcw.left .srcc span{color:#4ade80}:root:not([data-theme="light"]) .srcw.right .srcc b,:root:not([data-theme="light"]) .srcw.right .srcc span{color:#f87171}}
 @media (max-width:600px){.srcg{grid-template-columns:1fr}.srcr{border-left:0;border-top:1.5px solid var(--edge)}}
@@ -516,7 +512,7 @@ function srcBlock(side){
   const r=srcRows(side), pc=s=>Math.round(s*100)+'%';
   const total=side==='center'?LEAD.funnel[0].num:LEAD.funnelSides[side][0];
   const cell=([n,v,s],cls)=>`<div class="srcc ${cls}"><small>${esc(n)}</small><b>${fmtN(v)}</b><span>${pc(s)}</span></div>`;
-  return `<div class="srcw ${side}"><div class="srct">Заявки · ${esc(total)}</div><div class="srcg">${cell(r[0],'a')}<div class="srcr">${cell(r[1],'b')}${cell(r[2],'c')}<svg class="srca" viewBox="0 0 30 100" preserveAspectRatio="none" aria-hidden="true"><path d="M8 18 C 30 30, 30 70, 10 84" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M4 76 L10 86 L18 78" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg></div></div></div>`;
+  return `<div class="srcw ${side}"><div class="srct">Заявки · ${esc(total)}</div><div class="srcg">${cell(r[0],'a')}<div class="srcr">${cell(r[1],'b')}${cell(r[2],'c')}</div></div></div>`;
 }
 function openSources(side){ showPanel('Откуда заявки',srcBlock(side),()=>{}); }
 function openStage(i){
