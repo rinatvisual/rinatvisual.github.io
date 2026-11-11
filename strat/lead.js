@@ -142,6 +142,26 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .funnels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;margin-top:16px}
 .funnels .funnel{width:100%}
 .funnel.side .fst{cursor:default}
+.funnel.side .fst.src{cursor:pointer}.funnel.side .fst.src:hover{border-color:var(--accent)}
+.srcw{margin-bottom:14px}
+.srct{font-family:var(--fm);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink);margin-bottom:8px}
+.srcg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--edge);border-radius:14px;overflow:hidden;background:var(--card)}
+.srcr{display:grid;grid-template-rows:1fr 1fr;border-left:1.5px solid var(--edge);position:relative}
+.srcr .srcc{padding-right:44px}
+.srcr .srcc.c{border-top:1.5px solid var(--edge)}
+.srcc{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.srcc.a{justify-content:center}
+.srcc small{font-size:14px;color:var(--muted);font-weight:600}
+.srcc b{font-size:28px;font-weight:700;letter-spacing:-.01em;color:var(--ink);line-height:1.15}
+.srcc.a b{font-size:34px}
+.srcc span{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--accent)}
+.srca{position:absolute;right:6px;top:15%;height:70%;width:24px;color:var(--accent)}
+.srcw.left .srcc b,.srcw.left .srcc span,.srcw.left .srca{color:#16a34a}
+.srcw.right .srcc b,.srcw.right .srcc span,.srcw.right .srca{color:#dc2626}
+:root[data-theme="dark"] .srcw.left .srcc b,:root[data-theme="dark"] .srcw.left .srcc span{color:#4ade80}
+:root[data-theme="dark"] .srcw.right .srcc b,:root[data-theme="dark"] .srcw.right .srcc span{color:#f87171}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .srcw.left .srcc b,:root:not([data-theme="light"]) .srcw.left .srcc span{color:#4ade80}:root:not([data-theme="light"]) .srcw.right .srcc b,:root:not([data-theme="light"]) .srcw.right .srcc span{color:#f87171}}
+@media (max-width:600px){.srcg{grid-template-columns:1fr}.srcr{border-left:0;border-top:1.5px solid var(--edge)}}
 .funnel.side .fst:hover{border-color:var(--line)}
 .funnel.left .fst b{color:#16a34a}.funnel.right .fst b{color:#dc2626}
 :root[data-theme="dark"] .funnel.left .fst b{color:#4ade80}:root[data-theme="dark"] .funnel.right .fst b{color:#f87171}
@@ -314,7 +334,8 @@ window.renderLead=async function(){
   </section>`;
   box.querySelectorAll('[data-mod]').forEach(el=>{el.onclick=()=>openModule(el.dataset.mod);el.onkeydown=e=>{if(e.key==='Enter'&&!e.target.classList.contains('kwbtn'))openModule(el.dataset.mod)}});
   box.querySelectorAll('.kwbtn').forEach(btn=>{btn.onclick=e=>{e.stopPropagation();openKeyword(btn.dataset.kw)}});
-  box.querySelectorAll('.fst').forEach(el=>el.onclick=()=>openStage(+el.dataset.f));
+  box.querySelectorAll('.fst[data-f]').forEach(el=>el.onclick=()=>openStage(+el.dataset.f));
+  box.querySelectorAll('.fst[data-src]').forEach(el=>el.onclick=()=>openSources(el.dataset.src));
   box.querySelectorAll('#vtog [data-var]').forEach(el=>el.onclick=()=>{VAR=+el.dataset.var;ls.set('strat.var',String(VAR));renderLead()});
   drawEdges();
   prefetchImages();
@@ -474,12 +495,34 @@ function funnelCol(side){
   const val=s=>+String(s).replace(/\D/g,'');
   return `<div class="funnel side ${side}">${LEAD.funnel.map((f,i)=>{const n=nums[i]; if(n==null) return '';
     const nx=nums[i+1], cv=nx!=null&&val(n)?Math.round(val(nx)/val(n)*100)+'%':'';
-    return `<div class="fst ${i===LEAD.funnel.length-1?'last':''}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(n)}</b></div>${cv?`<div class="fcv">↓ ${cv}</div>`:''}`}).join('')}</div>`;
+    const tag=i===0&&LEAD.funnelSrc?'button':'div';
+    return `<${tag} class="fst ${i===LEAD.funnel.length-1?'last':''}${tag==='button'?' src':''}" ${tag==='button'?`data-src="${side}"`:''} style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(n)}</b></${tag}>${cv?`<div class="fcv">↓ ${cv}</div>`:''}`}).join('')}</div>`;
 }
+
+/* откуда пришли заявки: доли считаются по центральной воронке и одинаковы для всех трёх */
+const numv=s=>+String(s).replace(/\D/g,'');
+const fmtN=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+function srcRows(side){
+  const base=LEAD.funnelSrc.map(([n,v])=>[n,numv(v)]), sum=base.reduce((a,[,v])=>a+v,0);
+  if(side==='center') return base.map(([n,v])=>[n,v,v/sum]);
+  const total=numv(LEAD.funnelSides[side][0]);
+  // распределяем итог по тем же долям, остаток от округления — самым большим дробным частям
+  const raw=base.map(([n,v])=>[n,total*v/sum,v/sum]), fl=raw.map(([n,x,s])=>[n,Math.floor(x),s]);
+  let rest=total-fl.reduce((a,[,v])=>a+v,0);
+  raw.map((r,i)=>[i,r[1]-Math.floor(r[1])]).sort((a,b)=>b[1]-a[1]).forEach(([i])=>{if(rest>0){fl[i][1]++;rest--}});
+  return fl;
+}
+function srcBlock(side){
+  const r=srcRows(side), pc=s=>Math.round(s*100)+'%';
+  const total=side==='center'?LEAD.funnel[0].num:LEAD.funnelSides[side][0];
+  const cell=([n,v,s],cls)=>`<div class="srcc ${cls}"><small>${esc(n)}</small><b>${fmtN(v)}</b><span>${pc(s)}</span></div>`;
+  return `<div class="srcw ${side}"><div class="srct">Заявки · ${esc(total)}</div><div class="srcg">${cell(r[0],'a')}<div class="srcr">${cell(r[1],'b')}${cell(r[2],'c')}<svg class="srca" viewBox="0 0 30 100" preserveAspectRatio="none" aria-hidden="true"><path d="M8 18 C 30 30, 30 70, 10 84" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M4 76 L10 86 L18 78" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg></div></div></div>`;
+}
+function openSources(side){ showPanel('Откуда заявки',srcBlock(side),()=>{}); }
 function openStage(i){
   const f=LEAD.funnel[i], prev=LEAD.funnel[i-1];
   const c=f.concept&&LEAD.concepts.find(x=>x.name===f.concept), e=f.edge&&LEAD.edges.find(x=>x.id===f.edge);
-  const html=`<div class="ls"><div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
+  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls"><div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
     <div class="mt">${prev?`Из этапа «${esc(prev.name)}»: ${esc(prev.next)}`:'Первый этап воронки'}${f.next?` · дальше: ${esc(f.next)}`:''}</div></div>
     ${e?`<h5>На схеме</h5><div class="it task" data-edge="${e.id}"><span>${esc(mName(e.from))} → ${esc(mName(e.to))} · ${esc(e.num)}</span><span class="dd">регламент →</span></div>`:''}
     ${c?`<div class="row"><button class="btn ghost" data-go="${c.owner}">Открыть ${esc(M(c.owner).short)} · ${esc(M(c.owner).name)}</button></div>`:''}</div>`;
