@@ -197,6 +197,9 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .fssheet table{border-collapse:collapse;font-size:13px;font-family:var(--fb)}
 .fssheet td{border:1px solid #d9dde3;padding:4px 8px;white-space:pre-wrap;vertical-align:top;min-width:40px}
 .fssheet tr:first-child td{background:#eef3fb;font-weight:700;position:sticky;top:0}
+.lvid{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000}
+.lvid video{display:block;width:100%;max-height:70vh;background:#000}
+.fsstage video{width:100%;height:100%;object-fit:contain;display:block;border-radius:6px;background:#000;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 .fsstage .fsmsg{color:#9c9ca8;font-size:15px;text-align:center;max-width:46ch}
 .fsnav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:1px solid #34343c;background:rgba(28,28,32,.85);color:#fff;font-size:26px;display:grid;place-items:center;transition:background-color .15s,transform .15s}
 .fsnav:hover:not(:disabled){background:var(--tile);transform:translateY(-50%) scale(1.06)}
@@ -507,6 +510,8 @@ function bindMetrics(e){
 
 /* ---------- фото или PDF-презентация отдела (одно на модуль, шифруется как файлы) ---------- */
 const isPdf=f=>f&&(f.type==='application/pdf'||/\.pdf$/i.test(f.name||''));
+const isVid=f=>f&&(/^video\//.test(f.type||'')||/\.(mp4|m4v|webm|mov)$/i.test(f.name||''));
+const VIDMAX=50*1024*1024;  // ограничение GitHub на размер одного файла через API
 let PDFJS=null;
 function loadPdfJs(){
   if(PDFJS) return PDFJS;
@@ -567,17 +572,18 @@ const FSICON='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
 async function openFull(f,url,startPage){
   let d=$('#fsv');
   if(!d){d=document.createElement('dialog');d.id='fsv';document.body.appendChild(d);
-    d.addEventListener('close',()=>{d.innerHTML='';d.onkeydown=null;if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})})}
-  const img=/^image\//.test(f.type), pdf=isPdf(f), nm=(f.name||'').toLowerCase();
+    d.addEventListener('close',()=>{d.querySelectorAll('video').forEach(v=>v.pause());d.innerHTML='';d.onkeydown=null;if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})})}
+  const img=/^image\//.test(f.type), pdf=isPdf(f), vid=isVid(f), nm=(f.name||'').toLowerCase();
   const docx=/\.docx$/.test(nm)||/wordprocessingml/.test(f.type), xls=/\.(xlsx|xlsm|xls|csv|ods)$/.test(nm)||/spreadsheetml|ms-excel|text\/csv/.test(f.type);
   d.innerHTML=`<div class="fsbar"><h2>${esc(f.name)}</h2><span class="pg"></span>
     <a class="btn ghost" href="${url}" download="${esc(f.name)}">Скачать</a>
     <button class="ib" data-fs title="Во весь экран монитора">${FSICON}</button>
     <button class="ib" data-x aria-label="Закрыть">✕</button></div>
-    <div class="fsstage">${img?`<img src="${url}" alt="">`:(docx||xls)?'<p class="fsmsg">Открываю документ…</p>':pdf?'<canvas></canvas><button class="fsnav p" aria-label="Назад">‹</button><button class="fsnav n" aria-label="Вперёд">›</button>':'<p class="fsmsg">Этот тип файла здесь не показывается (например, PowerPoint или старый .doc) — нажмите «Скачать».</p>'}</div>`;
+    <div class="fsstage">${img?`<img src="${url}" alt="">`:vid?`<video controls autoplay playsinline src="${url}"></video>`:(docx||xls)?'<p class="fsmsg">Открываю документ…</p>':pdf?'<canvas></canvas><button class="fsnav p" aria-label="Назад">‹</button><button class="fsnav n" aria-label="Вперёд">›</button>':'<p class="fsmsg">Этот тип файла здесь не показывается (например, PowerPoint или старый .doc) — нажмите «Скачать».</p>'}</div>`;
   d.querySelector('[data-x]').onclick=()=>d.close();
   d.querySelector('[data-fs]').onclick=()=>{document.fullscreenElement?document.exitFullscreen():d.requestFullscreen&&d.requestFullscreen().catch(()=>{})};
   if(!d.open) d.showModal();
+  if(vid){const v=d.querySelector('video');if(startPage)v.addEventListener('loadedmetadata',()=>{v.currentTime=startPage},{once:true});return}
   if(docx||xls){
     const st=d.querySelector('.fsstage');
     try{
@@ -616,9 +622,9 @@ async function openFull(f,url,startPage){
 }
 
 function imgBlock(key){
-  const f=filesOf(key).slice(-1)[0], pdf=isPdf(f);
-  return `<div class="limg" data-key="${key}">${f?`<div class="limgw"><button class="limgv" title="Открыть крупно"><span class="lph">Загружаю ${pdf?'презентацию':'фото'}…</span></button></div>`:`<label class="limgd"><b>Загрузить фото или PDF</b><span>Схема, презентация PDF или снимок — покажется здесь на всю ширину</span><input type="file" accept="image/*,application/pdf,.pdf" hidden data-img></label>`}
-  ${f?`<div class="row" style="margin-top:8px"><label class="btn ghost upl">Заменить фото / PDF<input type="file" accept="image/*,application/pdf,.pdf" hidden data-img></label><button class="btn ghost" data-imgdel>Удалить ${pdf?'PDF':'фото'}</button><span class="upst"></span></div>`:'<span class="upst"></span>'}</div>`;
+  const f=filesOf(key).slice(-1)[0], pdf=isPdf(f), vid=isVid(f), ACC='image/*,application/pdf,.pdf,video/*,.mp4,.mov,.webm';
+  return `<div class="limg" data-key="${key}">${f?`<div class="limgw"><button class="limgv" title="Открыть крупно"><span class="lph">Загружаю ${pdf?'презентацию':vid?'видео':'фото'}…</span></button></div>`:`<label class="limgd"><b>Загрузить фото, PDF или видео</b><span>Схема, презентация PDF, снимок или видео (до 50 МБ) — покажется здесь на всю ширину</span><input type="file" accept="${ACC}" hidden data-img></label>`}
+  ${f?`<div class="row" style="margin-top:8px"><label class="btn ghost upl">Заменить фото / PDF / видео<input type="file" accept="${ACC}" hidden data-img></label><button class="btn ghost" data-imgdel>Удалить ${pdf?'PDF':vid?'видео':'фото'}</button><span class="upst"></span></div>`:'<span class="upst"></span>'}</div>`;
 }
 async function bindImg(key,reopen){
   const box=$('#dbody .limg'); if(!box) return;
@@ -626,11 +632,14 @@ async function bindImg(key,reopen){
   box.querySelectorAll('[data-img]').forEach(inp=>inp.onchange=async e=>{
     const file=e.target.files[0]; if(!file) return;
     const pdf=file.type==='application/pdf'||/\.pdf$/i.test(file.name||'');
-    if(!/^image\//.test(file.type)&&!pdf){stEl.textContent='Нужна картинка (JPG, PNG) или PDF';return}
+    const vid=isVid(file);
+    if(!/^image\//.test(file.type)&&!pdf&&!vid){stEl.textContent='Нужна картинка (JPG, PNG), PDF или видео (MP4, MOV, WebM)';return}
+    if(vid&&file.size>VIDMAX){stEl.textContent=`Видео ${(file.size/1048576).toFixed(0)} МБ — больше 50 МБ. Сожмите его и загрузите снова`;return}
     try{
       const old=filesOf(key);
       let up=file;
-      if(!pdf){stEl.textContent='Сжимаю фото…';up=await shrinkImage(file)}
+      if(vid){if(!/^video\/(mp4|webm)$/.test(file.type))up=new File([file],file.name,{type:/\.webm$/i.test(file.name)?'video/webm':'video/mp4'})}
+      else if(!pdf){stEl.textContent='Сжимаю фото…';up=await shrinkImage(file)}
       else if(!up.type){up=new File([file],file.name,{type:'application/pdf'})}
       await uploadFile(key,up,stEl);
       for(const o of old)await deleteFile(key,o.id);
@@ -639,7 +648,7 @@ async function bindImg(key,reopen){
   });
   const del=box.querySelector('[data-imgdel]');
   if(del) del.onclick=async()=>{
-    const lbl=isPdf(f)?'Удалить PDF':'Удалить фото';
+    const lbl=isPdf(f)?'Удалить PDF':isVid(f)?'Удалить видео':'Удалить фото';
     if(!del.dataset.sure){del.dataset.sure=1;del.textContent='Точно удалить?';setTimeout(()=>{del.textContent=lbl;delete del.dataset.sure},2500);return}
     for(const o of filesOf(key))await deleteFile(key,o.id);reopen();
   };
@@ -648,7 +657,11 @@ async function bindImg(key,reopen){
     if(!MEM.has(f.id)) await loadSync();
     const url=await blobUrl(f);
     const wrap=box.querySelector('.limgw'); if(!wrap) return;
-    if(isPdf(f)){
+    if(isVid(f)){
+      wrap.innerHTML=`<div class="lvid"><video controls playsinline preload="metadata" src="${url}"></video><button type="button" class="ib fsbtn" title="На весь экран">${FSICON}</button></div>`;
+      const v=wrap.querySelector('video');
+      wrap.querySelector('.fsbtn').onclick=e=>{e.stopPropagation();const tm=v.currentTime;v.pause();openFull(f,url,tm)};
+    }else if(isPdf(f)){
       const pdfjsLib=await loadPdfJs();
       const doc=await pdfjsLib.getDocument(url).promise;
       wrap.innerHTML=`<div class="lpdfv"><canvas title="Открыть на весь экран"></canvas><button type="button" class="ib fsbtn" title="На весь экран">${FSICON}</button><div class="pdfnav"><span class="pg">1 / ${doc.numPages}</span><button type="button" class="ib" data-p="-1" aria-label="Назад">‹</button><button type="button" class="ib" data-p="1" aria-label="Вперёд">›</button></div></div>`;
@@ -708,7 +721,7 @@ async function blobUrl(f){
 }
 // фоновая подгрузка всех фото, пока человек смотрит схему
 function prefetchImages(){
-  const run=()=>Object.keys(FL).filter(k=>k.startsWith('img:')).forEach(k=>{const f=filesOf(k).slice(-1)[0];if(f&&!MEM.has(f.id))blobUrl(f).catch(()=>{})});
+  const run=()=>Object.keys(FL).filter(k=>k.startsWith('img:')).forEach(k=>{const f=filesOf(k).slice(-1)[0];if(f&&!isVid(f)&&!MEM.has(f.id))blobUrl(f).catch(()=>{})});
   if(window.requestIdleCallback) requestIdleCallback(run,{timeout:2000}); else setTimeout(run,800);
 }
 // сжатие фото перед загрузкой: до 2400 px по длинной стороне, WebP
@@ -752,3 +765,5 @@ async function deleteFile(key,id){
   }catch(e){}
 }
 })();
+// закрыли окно отдела — видео не должно играть в фоне
+document.addEventListener('close',e=>{if(e.target&&e.target.id!=='fsv')e.target.querySelectorAll&&e.target.querySelectorAll('video').forEach(v=>v.pause())},true);
