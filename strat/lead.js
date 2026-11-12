@@ -55,6 +55,14 @@ const css=`
 .ls{margin-top:0}
 .ls h5{margin:18px 0 8px;font-size:15px;font-family:var(--fh);color:var(--ink)}
 .ls h5:first-child{margin-top:0}
+.calc{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 12px;margin:0 0 14px;padding:22px 16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,var(--soft),var(--card))}
+.calc .ct{display:flex;flex-direction:column;align-items:center;text-align:center;max-width:130px}
+.calc .ct b{font-size:26px;font-weight:800;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums}
+.calc .ct small{margin-top:4px;font-size:11px;color:var(--muted);line-height:1.2}
+.calc .co{font-size:26px;font-weight:700;color:var(--accent)}
+.calc .ct.res b{color:var(--accent);font-size:32px}
+.bus.clk{pointer-events:auto;cursor:pointer;border:0;border-radius:10px}
+.bus.clk:hover{background:var(--soft);outline:2px solid var(--accent)}
 .fml{margin:0 0 14px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;background:var(--soft)}
 .fml h5{margin:0 0 6px!important;font-size:13px;color:var(--muted)}
 .fml b{display:block;font-size:15px;margin-bottom:4px}
@@ -464,14 +472,15 @@ function drawEdges(){
     g.innerHTML=`<path class="ehit" d="${d}"></path><path class="epath ${e.dashed||off?'d':''} ${off?'off':''}" d="${d}" marker-end="url(#${off?'arrr':'arr'})"></path>`;
     g.querySelector('.ehit').addEventListener('click',()=>openEdge(e.id));
     svg.appendChild(g);
-    const [px,py,sz]=pills[e.id], nf=filesOf('edge:'+e.id).length, nc=['m1-m34','m2-m34','az-m1','az-m34'].includes(e.id);  // подписи «лиды» не кликаются — только сама стрелка
+    const [px,py,sz]=pills[e.id], nf=filesOf('edge:'+e.id).length; let nc=['m1-m34','m2-m34','az-m1','az-m34'].includes(e.id);  // подписи «лиды» не кликаются — только сама стрелка
     const b=document.createElement(nc?'span':'button'); b.className='epill '+sz+(off?' off':'')+(nc?' noclick':''); b.style.left=px+'px'; b.style.top=py+'px';
-    if(!nc) b.title='Регламент взаимодействия: '+mName(e.from)+' → '+mName(e.to);
+    const num=sz==='big'&&!!e.calc; if(num) nc=false;
+    if(!nc) b.title=num?'Как получено число':'Регламент взаимодействия: '+mName(e.from)+' → '+mName(e.to);
     b.innerHTML=esc(sz==='big'?e.num:(e.id.startsWith('m7-')?'Метрики':e.label.replace(/^→\s*М\d\S*:\s*/,'').replace(/^заявка$/i,'лиды')))+(nf?`<span class="fn">${ICONF}${nf}</span>`:'');
-    if(!nc) b.onclick=()=>openEdge(e.id); cv.appendChild(b);
+    if(!nc) b.onclick=()=>num?openNum(e.id):openEdge(e.id); cv.appendChild(b);
   }
   fitCanvas();
-  const s=document.createElement('div'); s.className='bus'; s.textContent=(LEAD.funnel&&LEAD.funnel[0]&&LEAD.funnel[0].num)||''; s.style.left=(m34.l-10)+'px'; s.style.top=((y1+y2)/2)+'px'; s.style.transform='translate(-100%,-50%)'; s.style.fontSize='20px'; cv.appendChild(s);
+  const s=document.createElement('button'); s.className='bus clk'; s.onclick=()=>openStage(0); s.textContent=(LEAD.funnel&&LEAD.funnel[0]&&LEAD.funnel[0].num)||''; s.style.left=(m34.l-10)+'px'; s.style.top=((y1+y2)/2)+'px'; s.style.transform='translate(-100%,-50%)'; s.style.fontSize='20px'; cv.appendChild(s);
 }
 
 /* ---------- окна ---------- */
@@ -546,11 +555,18 @@ function openKeyword(kw){
 }
 
 const fmlBlock=x=>x&&x.formula?`<div class="fml"><h5>Формула расчёта</h5><b>${esc(x.formula.h)}</b><p>${esc(x.formula.t)}</p></div>`:'';
+const calcPic=x=>{const c=x&&x.calc;if(!c)return '';let r=false;return `<div class="calc">${c.map(t=>{if(typeof t==='string'){if(t==='=')r=true;return `<span class="co">${esc(t)}</span>`}return `<div class="ct${r?' res':''}"><b>${esc(t[0])}</b><small>${esc(t[1])}</small></div>`}).join('')}</div>`};
+function openNum(eid){const i=LEAD.funnel.findIndex(f=>f.edge===eid);if(i>=0)return openStage(i);openCalcEdge(eid)}
+function openCalcEdge(eid){
+  const e=LEAD.edges.find(x=>x.id===eid);
+  showPanel('Расчёт числа',`<div class="ls">${calcPic(e)}${fmlBlock(e)}<div class="it"><div class="hd">${esc(e.label)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(e.num)}</p></div><div class="row"><button class="btn ghost" data-edge="${e.id}">Регламент взаимодействия →</button></div></div>`,()=>{
+    $('#dbody').querySelectorAll('[data-edge]').forEach(x=>x.onclick=()=>openEdge(x.dataset.edge));
+  });
+}
 function openEdge(eid){
   const e=LEAD.edges.find(x=>x.id===eid), a=e.from, b=e.to, isM=eid.startsWith('m7-');
   const html=`<div class="ls">
     <div class="it"><div class="hd">${esc(mName(a))} → ${esc(mName(b))}</div><div class="mt">${esc(mOwner(a))}${b!=='tu'?' → '+esc(mOwner(b)):''}</div><p>${esc(e.label.replace(/заявка/gi,'лиды'))}${e.num?` · <b>${esc(e.num)}</b>`:''}</p></div>
-    ${isM?'':fmlBlock(e)}
     ${isM?metricsBlock(e):`<h5>Фото</h5>${imgBlock('img:edge:'+eid)}`}
     ${filesBlock('edge:'+eid,'Файл регламента взаимодействия','Регламент ещё не загружен. Загрузите файл (PDF, Word, Excel, картинку) — он зашифруется и сохранится на GitHub.')}
     <div class="row" style="margin-top:10px"><button class="btn ghost" data-go="${a}">Открыть ${esc(M(a).short)}</button>${b!=='tu'?`<button class="btn ghost" data-go="${b}">Открыть ${esc(M(b).short)}</button>`:''}</div>
@@ -602,11 +618,11 @@ function openSources(side){ showPanel('Откуда заявки',srcBlock(side)
 function openStage(i){
   const f=LEAD.funnel[i], prev=LEAD.funnel[i-1];
   const c=f.concept&&LEAD.concepts.find(x=>x.name===f.concept), e=f.edge&&LEAD.edges.find(x=>x.id===f.edge);
-  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls">${fmlBlock(f.formula?f:e)}<div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
+  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls">${calcPic(f.calc?f:e)}${fmlBlock(f.formula?f:e)}<div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
     <div class="mt">${prev?`Из этапа «${esc(prev.name)}»: ${esc(prev.next)}`:'Первый этап воронки'}${f.next?` · дальше: ${esc(f.next)}`:''}</div></div>
     ${e?`<h5>На схеме</h5><div class="it task" data-edge="${e.id}"><span>${esc(mName(e.from))} → ${esc(mName(e.to))} · ${esc(e.num)}</span><span class="dd">регламент →</span></div>`:''}
     ${c?`<div class="row"><button class="btn ghost" data-go="${c.owner}">Открыть ${esc(M(c.owner).short)} · ${esc(M(c.owner).name)}</button></div>`:''}</div>`;
-  showPanel('Воронка 26/27',html,()=>{
+  showPanel('Расчёт звена воронки',html,()=>{
     $('#dbody').querySelectorAll('[data-edge]').forEach(x=>x.onclick=()=>openEdge(x.dataset.edge));
     $('#dbody').querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>openModule(x.dataset.go));
   });
