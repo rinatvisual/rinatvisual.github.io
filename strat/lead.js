@@ -388,7 +388,7 @@ function drawEdges(){
   P['m34-m5']=[[x5,m34.b],[x5,R.m5.t]]; pills['m34-m5']=[x5-62,(m34.b+R.m5.t)/2,'big'];
   // М5 → М3–4: прямая вверх в низ М3–4
   const x6=Math.min(m34.r,R.m5.r)-50;
-  P['m5-m34']=[[x6,R.m5.t],[x6,m34.b]]; pills['m5-m34']=[x6+30,(R.m5.t+m34.b)/2,'big'];
+  P['m5-m34']=[[x6,R.m5.t],[x6,m34.b]]; pills['m5-m34']=[x6+49,(R.m5.t+m34.b)/2,'big'];  // зазор от стрелки как у числа слева
   const xc=Math.round((R.m5.r+R.m6.l)/2);  // коридор М7 → М5 посередине между М5 и М6
   P['m34-m6']=[[m34.r,y1],[R.m6.l,y1]]; pills['m34-m6']=[(m34.r+xc)/2,y1-24,'big'];
   P['m6-m8']=[[R.m6.r,y1],[R.m8.l,y1]]; pills['m6-m8']=[(R.m6.r+R.m8.l)/2,y1-24,'big'];
