@@ -65,6 +65,9 @@ const css=`
 .bus.clk{pointer-events:auto;cursor:pointer;border:0;border-radius:10px}
 .bus.clk:hover{background:var(--soft);outline:2px solid var(--accent)}
 .fml{margin:0 0 14px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;background:var(--soft)}
+.fml .fedit{float:right;padding:2px 10px;font-size:12px}
+.fml .fin{width:100%;box-sizing:border-box;margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.fml .muted{color:var(--muted)}
 .fml h5{margin:0 0 6px!important;font-size:13px;color:var(--muted)}
 .fml b{display:block;font-size:15px;margin-bottom:4px}
 .fml p{margin:0;font-size:14px;line-height:1.5}
@@ -559,13 +562,26 @@ function openKeyword(kw){
   });
 }
 
-const fmlBlock=x=>x&&x.formula?`<div class="fml"><h5>Формула расчёта</h5><b>${esc(x.formula.h)}</b><p>${esc(x.formula.t)}</p></div>`:'';
+// формула расчёта: текст по умолчанию из данных, правка хранится зашифрованно в MT['fm:ключ']
+const fmlGet=(x,k)=>{const o=MT['fm:'+k];if(o){try{return JSON.parse(o.t)}catch(e){}}return (x&&x.formula)||{h:'',t:''}};
+const fmlBlock=(x,k)=>{const F=fmlGet(x,k);return `<div class="fml" data-fk="${esc(k)}"><h5>Формула расчёта <button class="btn ghost fedit" type="button">Изменить</button></h5><div class="fview">${F.h||F.t?`<b>${esc(F.h)}</b><p>${esc(F.t)}</p>`:'<p class="muted">Формула не заполнена</p>'}</div></div>`};
+function bindFml(x,reopen){
+  const box=$('#dbody .fml'); if(!box) return;
+  const k=box.dataset.fk, F=fmlGet(x,k), view=box.querySelector('.fview');
+  box.querySelector('.fedit').onclick=()=>{
+    view.innerHTML=`<input class="fin" id="fh" placeholder="Заголовок"><textarea class="fin" id="ft" rows="4" placeholder="Как получено число"></textarea><div class="row"><button class="btn" id="fs" type="button">Сохранить</button><button class="btn ghost" id="fc" type="button">Отмена</button><span class="upst" id="fst"></span></div>`;
+    $('#fh').value=F.h||'';$('#ft').value=F.t||'';$('#ft').focus();
+    $('#fc').onclick=()=>reopen();
+    $('#fs').onclick=async()=>{MT['fm:'+k]={t:JSON.stringify({h:$('#fh').value.trim(),t:$('#ft').value.trim()}),a:USER,ts:Date.now()};$('#fst').textContent='Сохраняю…';await persist();reopen()};
+  };
+}
 const calcPic=x=>{const c=x&&x.calc;if(!c)return '';let r=false;return `<div class="calc">${c.map(t=>{if(typeof t==='string'){if(t==='=')r=true;return `<span class="co">${esc(t)}</span>`}return `<div class="ct${r?' res':''}"><b>${esc(t[0])}</b><small>${esc(t[1])}</small></div>`}).join('')}</div>`};
 function openNum(eid){const i=LEAD.funnel.findIndex(f=>f.edge===eid);if(i>=0)return openStage(i);openCalcEdge(eid)}
 function openCalcEdge(eid){
   const e=LEAD.edges.find(x=>x.id===eid);
-  showPanel(e.label.replace(/^→\s*М\d\S*:\s*/,'').replace(/[«»]/g,''),`<div class="ls">${calcPic(e)}${fmlBlock(e)}<div class="it"><div class="hd">${esc(e.label)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(e.num)}</p></div><div class="row"><button class="btn ghost" data-edge="${e.id}">Регламент взаимодействия →</button></div></div>`,()=>{
+  showPanel(e.label.replace(/^→\s*М\d\S*:\s*/,'').replace(/[«»]/g,''),`<div class="ls">${calcPic(e)}${fmlBlock(e,e.id)}<div class="it"><div class="hd">${esc(e.label)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(e.num)}</p></div><div class="row"><button class="btn ghost" data-edge="${e.id}">Регламент взаимодействия →</button></div></div>`,()=>{
     $('#dbody').querySelectorAll('[data-edge]').forEach(x=>x.onclick=()=>openEdge(x.dataset.edge));
+    bindFml(e,()=>openCalcEdge(eid));
   });
 }
 function openEdge(eid){
@@ -617,19 +633,20 @@ function srcBlock(side){
   const r=srcRows(side), pc=s=>Math.round(s*100)+'%';
   const total=side==='center'?LEAD.funnel[0].num:LEAD.funnelSides[side][0];
   const cell=([n,v,s],cls)=>`<div class="srcc ${cls}"><small>${esc(n)}</small><b>${fmtN(v)}</b><span>${pc(s)}</span></div>`;
-  return `<div class="srcw ${side}"><div class="srct">Заявки · ${esc(total)}</div><div class="srcg">${cell(r[0],'a')}<div class="srcr">${cell(r[1],'b')}${cell(r[2],'c')}</div></div></div>`;
+  return `<div class="srcw ${side}"><div class="srct">Заявки · ${esc(total)} <span style="font-weight:400;opacity:.75">(доли — на основе статистики за прошлый год)</span></div><div class="srcg">${cell(r[0],'a')}<div class="srcr">${cell(r[1],'b')}${cell(r[2],'c')}</div></div></div>`;
 }
 function openSources(side){ showPanel('Откуда заявки',srcBlock(side),()=>{}); }
 function openStage(i){
   const f=LEAD.funnel[i], prev=LEAD.funnel[i-1];
   const c=f.concept&&LEAD.concepts.find(x=>x.name===f.concept), e=f.edge&&LEAD.edges.find(x=>x.id===f.edge);
-  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls">${calcPic(f.calc?f:e)}${fmlBlock(f.formula?f:e)}<div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
+  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls">${calcPic(f.calc?f:e)}${fmlBlock(f.formula?f:e,f.edge||'st'+i)}<div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
     <div class="mt">${prev?`Из этапа «${esc(prev.name)}»: ${esc(prev.next)}`:'Первый этап воронки'}${f.next?` · дальше: ${esc(f.next)}`:''}</div></div>
     ${e?`<h5>На схеме</h5><div class="it task" data-edge="${e.id}"><span>${esc(mName(e.from))} → ${esc(mName(e.to))} · ${esc(e.num)}</span><span class="dd">регламент →</span></div>`:''}
     ${c?`<div class="row"><button class="btn ghost" data-go="${c.owner}">Открыть ${esc(M(c.owner).short)} · ${esc(M(c.owner).name)}</button></div>`:''}</div>`;
   showPanel(f.name,html,()=>{
     $('#dbody').querySelectorAll('[data-edge]').forEach(x=>x.onclick=()=>openEdge(x.dataset.edge));
     $('#dbody').querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>openModule(x.dataset.go));
+    bindFml(f.formula?f:e,()=>openStage(i));
   });
 }
 
