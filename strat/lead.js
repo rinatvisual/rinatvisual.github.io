@@ -146,6 +146,18 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .funnels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;margin-top:16px}
 .funnels .funnel{width:100%}
 .fcol{min-width:0}
+.mline{margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}
+.mltitle{margin:0 0 14px;font-size:16px;font-weight:700;color:var(--ink)}
+.mlscroll{overflow-x:auto;padding-bottom:4px}
+.mltrack{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(13,minmax(84px,1fr));position:relative;min-width:1100px}
+.mltrack::before{content:'';position:absolute;left:0;right:0;top:31px;height:2px;background:var(--edge)}
+.mltrack li{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;text-align:center}
+.mlm{font-size:12.5px;font-weight:600;color:var(--muted);height:20px}
+.mltrack i{width:12px;height:12px;border-radius:50%;background:var(--card);border:2px solid var(--accent);position:relative;z-index:1}
+.mltrack b{font-size:16px;font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.mltrack li.tot i{background:var(--tile);border-color:var(--tile)}
+.mltrack li.tot b{color:var(--accent)}
+.mltrack li.tot .mlm{color:var(--ink);font-weight:700}
 .ftitle{margin:0 0 10px;text-align:center;font-size:16px;font-weight:700;color:var(--ink)}
 .ftitle:empty{display:none}
 .fcol.left .ftitle{color:#16a34a}.fcol.right .ftitle{color:#dc2626}.fcol.center .ftitle{color:var(--accent)}
@@ -335,7 +347,7 @@ window.renderLead=async function(){
   <section class="panel lsec">
     <h2>Воронка 26/27</h2><p class="sub">Нажмите на этап, чтобы перейти к связанной стрелке или отделу.</p>
     <div class="lboxes"><div class="lbox2"><b>${esc(LEAD.loop.title)}</b>${esc(LEAD.loop.text)}</div><div class="lbox2"><b>${esc(LEAD.chat.title)}</b>${esc(LEAD.chat.text)}</div></div>
-    <div class="funnels">${fTitle('center')}<div class="funnel">${LEAD.funnel.map((f,i)=>`<button class="fst ${i===LEAD.funnel.length-1?'last':''}" data-f="${i}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(f.num)}</b></button>${f.next?`<div class="fcv">↓ ${esc(f.next)}</div>`:''}`).join('')}</div></div>${fTitle('left')}${funnelCol('left')}</div>${fTitle('right')}${funnelCol('right')}</div></div>
+    <div class="funnels">${fTitle('center')}<div class="funnel">${LEAD.funnel.map((f,i)=>`<button class="fst ${i===LEAD.funnel.length-1?'last':''}" data-f="${i}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(f.num)}</b></button>${f.next?`<div class="fcv">↓ ${esc(f.next)}</div>`:''}`).join('')}</div></div>${fTitle('left')}${funnelCol('left')}</div>${fTitle('right')}${funnelCol('right')}</div></div>${monthLine()}
   </section>`;
   box.querySelectorAll('[data-mod]').forEach(el=>{el.onclick=()=>openModule(el.dataset.mod);el.onkeydown=e=>{if(e.key==='Enter'&&!e.target.classList.contains('kwbtn'))openModule(el.dataset.mod)}});
   box.querySelectorAll('.kwbtn').forEach(btn=>{btn.onclick=e=>{e.stopPropagation();openKeyword(btn.dataset.kw)}});
@@ -510,6 +522,11 @@ function openEdge(eid){
 // боковые воронки: слева — зелёные цифры, справа — красные; конверсия считается из самих чисел
 // колонка воронки с подписью сверху (подписи — в зашифрованных данных)
 const fTitle=side=>`<div class="fcol ${side}"><h3 class="ftitle">${esc((LEAD.funnelTitles&&LEAD.funnelTitles[side])||'')}</h3>`;
+// таймлайн «Получено лидов по месяцам»: месяц сверху, число под ним
+function monthLine(){
+  const L=LEAD.leadsByMonth; if(!L||!L.items) return '';
+  return `<div class="mline"><h3 class="mltitle">${esc(L.title||'')}</h3><div class="mlscroll"><ol class="mltrack">${L.items.map(([m,n])=>`<li><span class="mlm">${esc(m)}</span><i></i><b>${esc(n)}</b></li>`).join('')}${L.total?`<li class="tot"><span class="mlm">Итого</span><i></i><b>${esc(L.total)}</b></li>`:''}</ol></div></div>`;
+}
 function funnelCol(side){
   const nums=(LEAD.funnelSides&&LEAD.funnelSides[side])||[]; if(!nums.length) return '';
   const val=s=>+String(s).replace(/\D/g,'');
