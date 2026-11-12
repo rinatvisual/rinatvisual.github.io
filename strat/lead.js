@@ -55,6 +55,10 @@ const css=`
 .ls{margin-top:0}
 .ls h5{margin:18px 0 8px;font-size:15px;font-family:var(--fh);color:var(--ink)}
 .ls h5:first-child{margin-top:0}
+.fml{margin:0 0 14px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;background:var(--soft)}
+.fml h5{margin:0 0 6px!important;font-size:13px;color:var(--muted)}
+.fml b{display:block;font-size:15px;margin-bottom:4px}
+.fml p{margin:0;font-size:14px;line-height:1.5}
 .ls .it{border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin-bottom:6px;font-size:14px}
 .ls .it .hd{display:flex;align-items:center;gap:8px;font-weight:600}
 .ls .it p{margin:4px 0 0}
@@ -541,10 +545,12 @@ function openKeyword(kw){
   });
 }
 
+const fmlBlock=x=>x&&x.formula?`<div class="fml"><h5>Формула расчёта</h5><b>${esc(x.formula.h)}</b><p>${esc(x.formula.t)}</p></div>`:'';
 function openEdge(eid){
   const e=LEAD.edges.find(x=>x.id===eid), a=e.from, b=e.to, isM=eid.startsWith('m7-');
   const html=`<div class="ls">
     <div class="it"><div class="hd">${esc(mName(a))} → ${esc(mName(b))}</div><div class="mt">${esc(mOwner(a))}${b!=='tu'?' → '+esc(mOwner(b)):''}</div><p>${esc(e.label.replace(/заявка/gi,'лиды'))}${e.num?` · <b>${esc(e.num)}</b>`:''}</p></div>
+    ${isM?'':fmlBlock(e)}
     ${isM?metricsBlock(e):`<h5>Фото</h5>${imgBlock('img:edge:'+eid)}`}
     ${filesBlock('edge:'+eid,'Файл регламента взаимодействия','Регламент ещё не загружен. Загрузите файл (PDF, Word, Excel, картинку) — он зашифруется и сохранится на GitHub.')}
     <div class="row" style="margin-top:10px"><button class="btn ghost" data-go="${a}">Открыть ${esc(M(a).short)}</button>${b!=='tu'?`<button class="btn ghost" data-go="${b}">Открыть ${esc(M(b).short)}</button>`:''}</div>
@@ -596,7 +602,7 @@ function openSources(side){ showPanel('Откуда заявки',srcBlock(side)
 function openStage(i){
   const f=LEAD.funnel[i], prev=LEAD.funnel[i-1];
   const c=f.concept&&LEAD.concepts.find(x=>x.name===f.concept), e=f.edge&&LEAD.edges.find(x=>x.id===f.edge);
-  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls"><div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
+  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls">${fmlBlock(f.formula?f:e)}<div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
     <div class="mt">${prev?`Из этапа «${esc(prev.name)}»: ${esc(prev.next)}`:'Первый этап воронки'}${f.next?` · дальше: ${esc(f.next)}`:''}</div></div>
     ${e?`<h5>На схеме</h5><div class="it task" data-edge="${e.id}"><span>${esc(mName(e.from))} → ${esc(mName(e.to))} · ${esc(e.num)}</span><span class="dd">регламент →</span></div>`:''}
     ${c?`<div class="row"><button class="btn ghost" data-go="${c.owner}">Открыть ${esc(M(c.owner).short)} · ${esc(M(c.owner).name)}</button></div>`:''}</div>`;
