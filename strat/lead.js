@@ -139,6 +139,8 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .fst.last small,.fst.last b{color:var(--on-accent)}
 .fcv{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--accent);padding:4px 0}
 .lboxes{gap:12px}
+.lhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lhead h2{margin:0}
 .mdedit label{display:block;font-family:var(--fm);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
 .mdedit label small{text-transform:none;letter-spacing:0;color:var(--muted);font-family:var(--fb);font-weight:500}
 .mdedit textarea{display:block;width:100%;margin-top:4px;font:14px/1.45 var(--fb);text-transform:none;letter-spacing:0;color:var(--ink);resize:vertical}
@@ -374,7 +376,7 @@ window.renderLead=async function(){
       return `<button class="mchip" data-mod="${id}"><span class="mn">${esc(m.num)}</span><b>${esc(m.name)}</b><strong>${esc(own)}</strong><small>${esc(m.desc||'')}</small></button>`}).join('')}</div>
   </section>
   <section class="panel lsec">
-    <h2>Путь лида</h2>
+    <div class="lhead"><h2>Путь лида</h2><button class="btn ghost" id="mxls" type="button">Скачать метрики отделов (Excel)</button></div>
     <p class="lhint">Карточка открывает отдел. Стрелка или число на ней открывает регламент взаимодействия между двумя отделами.</p>
     <div class="lscroll"><div class="lcanvas" id="lcanvas">${LEAD.variants?`<div class="vtog" id="vtog" role="group" aria-label="Куда идут лиды ${esc(M('az').name)}"><span class="vcap">Лиды ${esc(M('az').name)}:</span>${Object.entries(LEAD.variants).map(([k,v],i)=>`${i?'<span class="vor">или</span>':''}<button data-var="${k}" class="${String(VAR)===k?'on':''}">${esc(v)}</button>`).join('')}</div>`:''}<svg id="lsvg"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker><marker id="arrr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--danger)"/></marker></defs></svg>${cards}</div></div>
   </section>
@@ -384,6 +386,7 @@ window.renderLead=async function(){
     <div class="funnels">${fTitle('center')}<div class="funnel">${LEAD.funnel.map((f,i)=>`<button class="fst ${i===LEAD.funnel.length-1?'last':''}" data-f="${i}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(f.num)}</b></button>${f.next?`<div class="fcv">↓ ${esc(f.next)}</div>`:''}`).join('')}</div></div>${fTitle('left')}${funnelCol('left')}</div>${fTitle('right')}${funnelCol('right')}</div></div>${monthLine()}
   </section>`;
   box.querySelectorAll('[data-mod]').forEach(el=>{el.onclick=()=>openModule(el.dataset.mod);el.onkeydown=e=>{if(e.key==='Enter'&&!e.target.classList.contains('kwbtn'))openModule(el.dataset.mod)}});
+  const mx=box.querySelector('#mxls'); if(mx) mx.onclick=()=>exportMetricsXlsx(mx).catch(e=>alert('Не удалось выгрузить: '+e.message));
   box.querySelectorAll('.kwbtn').forEach(btn=>{btn.onclick=e=>{e.stopPropagation();openKeyword(btn.dataset.kw)}});
   box.querySelectorAll('.fst[data-f]').forEach(el=>el.onclick=()=>openStage(+el.dataset.f));
   box.querySelectorAll('.fst[data-src]').forEach(el=>el.onclick=()=>openSources(el.dataset.src));
@@ -604,6 +607,85 @@ function openStage(i){
 }
 
 /* ---------- метрики на стрелках М7: просмотр + правка по кнопке ---------- */
+/* ---------- выгрузка метрик всех отделов в оформленный Excel ---------- */
+async function exportMetricsXlsx(btn){
+  const order=['m1','m2','m34','m5','m6','m8'];
+  const edges=LEAD.edges.filter(e=>e.id.startsWith('m7-')).sort((a,b)=>order.indexOf(a.to)-order.indexOf(b.to));
+  const rows=[];  // [отдел, ответственный, блок, подраздел, метрика, пояснение, группа]
+  edges.forEach((e,gi)=>{
+    const m=M(e.to), cur=MT[e.id], txt=cur?cur.t:(e.metrics||'');
+    for(const b of parseMetrics(txt)){
+      let sub='';
+      for(const it of b.items){
+        if(/:\s*$/.test(it)){sub=it.replace(/:\s*$/,'');continue}
+        const i=it.indexOf(' — ');
+        rows.push([`${m.short} · ${m.name}`,`${m.owner} · ${m.dept}`,b.h,sub,i>0?it.slice(0,i):it,i>0?it.slice(i+3):'',gi]);
+      }
+    }
+  });
+  const X=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const col=i=>String.fromCharCode(65+i);
+  const c=(r,i,v,s)=>`<c r="${col(i)}${r}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${X(v)}</t></is></c>`;
+  const hdr=['Отдел','Ответственный','Блок','Подраздел','Метрика','Пояснение'];
+  const today=new Date().toLocaleDateString('ru-RU');
+  let x=`<row r="1" ht="26" customHeight="1">${c(1,0,'Метрики отделов · Путь лида',1)}</row>`;
+  x+=`<row r="2">${c(2,0,`Выгрузка от ${today} · отделов: ${edges.length} · метрик: ${rows.length}`,2)}</row>`;
+  x+=`<row r="4" ht="22" customHeight="1">${hdr.map((h,i)=>c(4,i,h,3)).join('')}</row>`;
+  let prev=null;
+  rows.forEach((r,k)=>{
+    const n=5+k, alt=r[6]%2, first=r[0]!==prev; prev=r[0];
+    const base=alt?5:4;  // чередуем заливку по отделам
+    x+=`<row r="${n}">${r.slice(0,6).map((v,i)=>c(n,i,v,i<2?(first?(alt?7:6):(alt?11:10)):(i===4?(alt?9:8):base))).join('')}</row>`;
+  });
+  const last=4+rows.length;
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>
+<sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="4" topLeftCell="A5" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+<sheetFormatPr defaultRowHeight="18"/>
+<cols><col min="1" max="1" width="30" customWidth="1"/><col min="2" max="2" width="26" customWidth="1"/><col min="3" max="3" width="22" customWidth="1"/><col min="4" max="4" width="20" customWidth="1"/><col min="5" max="5" width="52" customWidth="1"/><col min="6" max="6" width="44" customWidth="1"/></cols>
+<sheetData>${x}</sheetData>
+<autoFilter ref="A4:F${Math.max(last,4)}"/>
+<mergeCells count="2"><mergeCell ref="A1:F1"/><mergeCell ref="A2:F2"/></mergeCells>
+<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>
+<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>
+</worksheet>`;
+  const B='<border><left style="thin"><color rgb="FFD7E6FC"/></left><right style="thin"><color rgb="FFD7E6FC"/></right><top style="thin"><color rgb="FFD7E6FC"/></top><bottom style="thin"><color rgb="FFD7E6FC"/></bottom><diagonal/></border>';
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="6"><font><sz val="11"/><color rgb="FF1F2A44"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="16"/><color rgb="FF0F2F6E"/><name val="Calibri"/><family val="2"/></font><font><sz val="10"/><color rgb="FF5D6B88"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><color rgb="FF0F2F6E"/><name val="Calibri"/><family val="2"/></font><font><sz val="10"/><color rgb="FF9AA6BF"/><name val="Calibri"/><family val="2"/></font></fonts>
+<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0F2F6E"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3F8FF"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>${B}</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="12">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="4" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="4" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="5" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="5" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');
+  zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  zip.file('xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Метрики отделов" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">'Метрики отделов'!$A$4:$F$${Math.max(last,4)}</definedName><definedName name="_xlnm.Print_Titles" localSheetId="0">'Метрики отделов'!$4:$4</definedName></definedNames></workbook>`);
+  zip.file('xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+  zip.file('xl/styles.xml',styles);
+  zip.file('xl/worksheets/sheet1.xml',sheet);
+  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`metriki-otdelov_${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}.xlsx`;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
+}
+
 function parseMetrics(txt){
   const blocks=[]; let cur=null;
   for(const raw of String(txt||'').split('\n')){
