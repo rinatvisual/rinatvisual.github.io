@@ -304,6 +304,10 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .fsbtn{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;padding:0!important;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 
 .epill.noclick{pointer-events:none;cursor:default}
+/* числа на схеме — одинаковый вид и отклик (как у 636 596) */
+.epill.big,.bus.clk{border:0;border-radius:10px;background:var(--soft);padding:0 8px;transition:background-color .15s,outline-color .15s,transform .15s}
+.epill.big:hover,.bus.clk:hover,.epill.big:focus-visible,.bus.clk:focus-visible{background:var(--soft);color:var(--ink);outline:2px solid var(--accent);outline-offset:0}
+.epill.big:active,.bus.clk:active{outline-width:3px}
 .limgw{position:relative}
 .lpdfv{position:relative;display:block;width:100%;border:1px solid var(--line);border-radius:14px;background:var(--soft);overflow:hidden}
 .lpdfv canvas{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;background:var(--card);cursor:zoom-in;margin:0 auto}
@@ -389,7 +393,7 @@ window.renderLead=async function(){
   </section>
   <section class="panel lsec">
     <div class="lhead"><h2>Путь лида</h2><button class="btn ghost" id="mxls" type="button">Скачать метрики отделов (Excel)</button></div>
-    <p class="lhint">Карточка открывает отдел. Стрелка или число на ней открывает регламент взаимодействия между двумя отделами.</p>
+    <p class="lhint">Карточка открывает отдел. Стрелка открывает регламент взаимодействия между двумя отделами, число — расчёт звена воронки.</p>
     <div class="lscroll"><div class="lcanvas" id="lcanvas">${LEAD.variants?`<div class="vtog" id="vtog" role="group" aria-label="Куда идут лиды ${esc(M('az').name)}"><span class="vcap">Лиды ${esc(M('az').name)}:</span>${Object.entries(LEAD.variants).map(([k,v],i)=>`${i?'<span class="vor">или</span>':''}<button data-var="${k}" class="${String(VAR)===k?'on':''}">${esc(v)}</button>`).join('')}</div>`:''}<svg id="lsvg"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker><marker id="arrr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--danger)"/></marker></defs></svg>${cards}</div></div>
   </section>
   <section class="panel lsec">
