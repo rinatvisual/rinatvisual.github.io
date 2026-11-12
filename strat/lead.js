@@ -245,6 +245,40 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .fssheet table{border-collapse:collapse;font-size:13px;font-family:var(--fb)}
 .fssheet td{border:1px solid #d9dde3;padding:4px 8px;white-space:pre-wrap;vertical-align:top;min-width:40px}
 .fssheet tr:first-child td{background:#eef3fb;font-weight:700;position:sticky;top:0}
+.fssheet .xlt{border-collapse:collapse;font-size:12.5px;font-family:var(--fb);table-layout:fixed}
+.fssheet .xlt td{border:1px solid #dfe3ea;padding:3px 6px;white-space:pre-wrap;vertical-align:top;overflow:hidden;word-break:break-word;color:#111}
+.fssheet .xlt td.n{text-align:right;font-variant-numeric:tabular-nums}
+.fssheet .xlt tr:first-child td{font-weight:700;position:sticky;top:0;z-index:1;background:#eef3fb}
+.fssheet.cal{background:#0b0b0d;color:#ececf1}
+.xcal{padding:14px 18px 40px;max-width:1500px;margin:0 auto}
+.xbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.xbar label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#9c9ca8;font-weight:600}
+.xbar select{background:#1c1c20;color:#ececf1;border:1px solid #34343c;border-radius:8px;padding:5px 8px;font:13px var(--fb);min-width:160px}
+.xleg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:14px;font-size:12.5px;color:#c9c9d3}
+.xleg span{display:inline-flex;align-items:center;gap:6px}
+.xleg i,.xinfo b i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.xinfo{position:sticky;top:0;z-index:3;background:#1c1c20;border:1px solid #34343c;border-radius:12px;padding:12px 40px 12px 14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.xinfo b{display:flex;align-items:center;gap:8px;font-size:15px}
+.xinfo dl{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;margin:8px 0 0;font-size:13.5px}
+.xinfo dt{color:#9c9ca8}.xinfo dd{margin:0}
+.xclose{position:absolute;top:8px;right:8px;border:0;background:transparent;color:#ececf1;font-size:16px;cursor:pointer;width:28px;height:28px;border-radius:8px}
+.xclose:hover{background:#2a2a30}
+.xcm{margin-bottom:22px}
+.xcm h4{margin:0 0 8px;font-size:18px;color:#ececf1;display:flex;align-items:baseline;gap:10px}
+.xcm h4 small{font-size:12.5px;color:#9c9ca8;font-weight:500}
+.xcg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.xwd{font-size:11px;font-weight:700;color:#9c9ca8;text-transform:uppercase;padding:0 4px}
+.xwd.we{color:#f87171}
+.xd{min-height:74px;background:#161619;border:1px solid #26262c;border-radius:8px;padding:4px;display:flex;flex-direction:column;gap:3px}
+.xd.we{background:#131316}.xd.off{background:transparent;border-color:transparent}
+.xd.td{border-color:#4b93ff}
+.xn{font-size:12px;font-weight:700;color:#9c9ca8}
+.xd.we .xn{color:#f87171}
+.xe{border:0;border-radius:5px;padding:2px 5px;font:600 11.5px/1.25 var(--fb);color:#1a1a1a;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xe b{font-weight:800;opacity:.75}
+.xe:hover{filter:brightness(1.08);outline:2px solid #fff}
+@media (max-width:700px){.xd{min-height:56px}.xe{font-size:10px;padding:1px 3px}.xe b{display:none}}
+
 .lvid{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000}
 .lvid video{display:block;width:100%;max-height:70vh;background:#000}
 .fsstage video{width:100%;height:100%;object-fit:contain;display:block;border-radius:6px;background:#000;box-shadow:0 10px 40px rgba(0,0,0,.6)}
@@ -639,6 +673,115 @@ function loadScript(urls,ready){
     if(!ready()){delete LIBS[k];throw new Error('не загрузился просмотрщик')}
   })();
 }
+/* ---------- просмотр Excel: аккуратные таблицы + календарь мероприятий ---------- */
+const XLPAL={'Голубой':'A9C6F5','Сиреневато-розовый':'E6BCD6','Зелёный':'B5D9AE','Оранжевый':'F7CA9D','Светло-жёлтый':'FFF1C9','Серый':'D9DDE2','Синий':'8FB4E6','Бирюзовый':'A8DED9','Персиковый':'F9DBC4','Лавандовый':'D0C7F0','Розовый':'F3C9D4','Светло-зелёный':'C7E6C2','Мятный':'B9E9D6','Лимонный':'FFF2A6','Коралловый':'F2ADA0','Лиловый':'DBC8ED','Салатовый':'D5EBAE','Кремовый':'F5E5C3','Стальной':'AFBED1','Песочный':'ECD5A7','Аквамарин':'A6E0DA','Небесный':'B9D8FA','Пурпурный':'E4B6E6','Хвойный':'AACDB7','Сизый':'BEC7DD','Фисташковый':'D9E5C7','Орхидея':'DEABD7','Морская пена':'C1DAD6','Льняной':'E3D7CA','Аметистовый':'B9AFDA','Яблочный':'BAE3B8','Пудровый':'E0CCD3','Сизо-голубой':'B2C9D7','Оливковый':'DDE0BB','Глициния':'E0C5E8','Шалфейный':'B6D3C4','Пыльная роза':'DDC4BE','Барвинковый':'C7CAE5','Лаймовый':'BEDEAB','Пыльно-сиреневый':'DAC1D1','Ледяной':'CAE2E3','Соломенный':'DACFAF','Вересковый':'CBB8E3','Эвкалиптовый':'CCE0CF','Пепельно-розовый':'D7B2B7','Джинсовый':'BBCAE0','Сельдерейный':'DEE8C5','Мальвовый':'D3B6D3','Нефритовый':'BEDDD4','Миндальный':'E5D4C7'};
+// тёмная заливка → белый текст
+const xlDark=h=>{const n=parseInt(h,16);return ((n>>16&255)*299+(n>>8&255)*587+(n&255)*114)/1000<140};
+const XLMON=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const xlDay=v=>{if(!(v instanceof Date)||isNaN(v))return null;const d=new Date(v.getTime()+12*3600e3);return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
+const xlKey=d=>d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+
+// таблица листа: без скрытых строк/столбцов, с ширинами, заливками и объединёнными ячейками
+function xlSheetHtml(ws){
+  if(!ws||!ws['!ref']) return '<p class="fsmsg">Лист пустой</p>';
+  const R=XLSX.utils.decode_range(ws['!ref']), rows=ws['!rows']||[], cols=ws['!cols']||[], merges=ws['!merges']||[];
+  const hidR=r=>rows[r]&&rows[r].hidden, hidC=c=>cols[c]&&cols[c].hidden;
+  // последняя строка, где реально есть значения
+  let last=R.s.r; for(const k in ws){if(k[0]==='!')continue;const a=XLSX.utils.decode_cell(k);const c=ws[k];if(c&&c.v!==''&&c.v!=null&&a.r>last)last=a.r}
+  last=Math.min(last,R.s.r+3000);
+  const cover=new Set(), span={};
+  for(const m of merges){
+    let cs=0,rs=0; for(let c=m.s.c;c<=m.e.c;c++)if(!hidC(c))cs++; for(let r=m.s.r;r<=m.e.r;r++)if(!hidR(r))rs++;
+    span[m.s.r+':'+m.s.c]=[rs||1,cs||1];
+    for(let r=m.s.r;r<=m.e.r;r++)for(let c=m.s.c;c<=m.e.c;c++)if(r!==m.s.r||c!==m.s.c)cover.add(r+':'+c);
+  }
+  const colg=[];for(let c=R.s.c;c<=R.e.c;c++){if(hidC(c))continue;const w=cols[c]&&(cols[c].wpx||(cols[c].wch?cols[c].wch*7.5:0));colg.push(`<col style="width:${Math.round(w||64)}px">`)}
+  let h=`<table class="xlt"><colgroup>${colg.join('')}</colgroup>`;
+  for(let r=R.s.r;r<=last;r++){
+    if(hidR(r))continue;
+    let tr='';
+    for(let c=R.s.c;c<=R.e.c;c++){
+      if(hidC(c)||cover.has(r+':'+c))continue;
+      const cell=ws[XLSX.utils.encode_cell({r,c})], sp=span[r+':'+c];
+      let txt=cell?(cell.w!=null?cell.w:(cell.v instanceof Date?cell.v.toLocaleDateString('ru-RU'):cell.v)):'';
+      if(txt==null)txt='';
+      const fill=cell&&cell.s&&cell.s.fgColor&&cell.s.fgColor.rgb&&cell.s.patternType==='solid'?cell.s.fgColor.rgb.slice(-6):'';
+      const num=cell&&(cell.t==='n'||cell.t==='d');
+      tr+=`<td${sp?` rowspan="${sp[0]}" colspan="${sp[1]}"`:''}${fill&&fill!=='FFFFFF'?` style="background:#${fill}${xlDark(fill)?';color:#fff':''}"`:''}${num?' class="n"':''}>${esc(String(txt))}</td>`;
+    }
+    h+=`<tr>${tr}</tr>`;
+  }
+  return h+'</table>';
+}
+
+// если в книге есть лист с мероприятиями (даты начала/окончания) — рисуем нормальный календарь
+function xlEvents(wb){
+  for(const name of wb.SheetNames){
+    const a=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:null});
+    const hdr=(a[0]||[]).map(x=>String(x||'').trim());
+    const ix=k=>hdr.indexOf(k), iS=ix('Дата начала'), iN=ix('Мероприятие');
+    if(iS<0||iN<0) continue;
+    const g=(row,k)=>{const i=ix(k);return i<0?null:row[i]};
+    const ev=[];
+    for(const row of a.slice(1)){
+      const s=xlDay(row[iS]); if(!s) continue;
+      const e=xlDay(g(row,'Дата окончания'))||s;
+      ev.push({s,e:e<s?s:e,name:String(row[iN]||''),code:String(g(row,'Код мероприятия')||row[iN]||''),proj:g(row,'Проект')||'',fmt:g(row,'Формат мероприятия')||'',ass:g(row,'Ассессмент')||'',desc:g(row,'Описание')||'',n:g(row,'Кол-во участников'),resp:g(row,'Ответственный')||'',col:XLPAL[g(row,'Цвет мероприятия')]||'D9DDE2'});
+    }
+    if(ev.length) return {sheet:name,ev};
+  }
+  return null;
+}
+function xlCalendarHtml(cal,f){
+  const ev=cal.ev.filter(e=>(!f.proj||e.proj===f.proj)&&(!f.resp||e.resp===f.resp)&&(!f.name||e.name===f.name));
+  const byDay={}; ev.forEach((e,i)=>{for(let d=new Date(e.s);d<=e.e;d.setDate(d.getDate()+1))(byDay[xlKey(d)]=byDay[xlKey(d)]||[]).push(i)});
+  const all=cal.ev, min=new Date(Math.min(...all.map(e=>e.s))), max=new Date(Math.max(...all.map(e=>e.e)));
+  const today=xlKey(new Date());
+  let h='';
+  for(let m=new Date(min.getFullYear(),min.getMonth(),1);m<=max;m=new Date(m.getFullYear(),m.getMonth()+1,1)){
+    const y=m.getFullYear(),mo=m.getMonth(), first=(m.getDay()+6)%7, dim=new Date(y,mo+1,0).getDate();
+    let cnt=0,ppl=0; ev.forEach(e=>{if(e.s.getFullYear()===y&&e.s.getMonth()===mo){cnt++;ppl+=+e.n||0}});
+    h+=`<section class="xcm"><h4>${XLMON[mo]} ${y}<small>${cnt} меропр.${ppl?` · ${ppl.toLocaleString('ru-RU')} участн.`:''}</small></h4><div class="xcg">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map((d,i)=>`<div class="xwd${i>4?' we':''}">${d}</div>`).join('')}`;
+    for(let i=0;i<first;i++)h+='<div class="xd off"></div>';
+    for(let d=1;d<=dim;d++){
+      const k=y*10000+(mo+1)*100+d, list=byDay[k]||[], we=(first+d-1)%7>4;
+      h+=`<div class="xd${we?' we':''}${k===today?' td':''}"><span class="xn">${d}</span>${list.map(i=>{const e=ev[i];return `<button class="xe" style="background:#${e.col}" data-e="${i}" title="${esc(e.name)}${e.n?' · '+e.n+' участн.':''}${e.resp?' · '+esc(e.resp):''}">${esc(e.code)}${e.n?` <b>${e.n}</b>`:''}</button>`}).join('')}</div>`;
+    }
+    h+='</div></section>';
+  }
+  return {html:h,ev};
+}
+function xlCalendarView(host,cal){
+  const uniq=k=>[...new Set(cal.ev.map(e=>e[k]).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'ru'));
+  const sel=(k,lbl)=>`<label>${lbl}<select data-f="${k}"><option value="">Все</option>${uniq(k).map(v=>`<option>${esc(v)}</option>`).join('')}</select></label>`;
+  const types=[...new Map(cal.ev.map(e=>[e.name,e])).values()];
+  host.innerHTML=`<div class="xcal"><div class="xbar">${sel('proj','Проект')}${sel('name','Мероприятие')}${sel('resp','Ответственный')}</div>
+    <div class="xleg">${types.map(e=>`<span><i style="background:#${e.col}"></i>${esc(e.code)} — ${esc(e.name)}</span>`).join('')}</div>
+    <div class="xinfo" hidden></div><div class="xmonths"></div></div>`;
+  const f={}, info=host.querySelector('.xinfo');
+  const draw=()=>{const r=xlCalendarHtml(cal,f);host.querySelector('.xmonths').innerHTML=r.html;
+    host.querySelectorAll('.xe').forEach(b=>b.onclick=()=>{const e=r.ev[+b.dataset.e],dt=d=>d.toLocaleDateString('ru-RU');
+      info.hidden=false;info.innerHTML=`<button class="xclose" aria-label="Закрыть">✕</button><b><i style="background:#${e.col}"></i>${esc(e.name)}</b>
+        <dl><dt>Даты</dt><dd>${dt(e.s)}${+e.e!==+e.s?' — '+dt(e.e):''}</dd>${e.proj?`<dt>Проект</dt><dd>${esc(e.proj)}</dd>`:''}${e.fmt?`<dt>Формат</dt><dd>${esc(e.fmt)}</dd>`:''}${e.n?`<dt>Участников</dt><dd>${esc(e.n)}</dd>`:''}${e.resp?`<dt>Ответственный</dt><dd>${esc(e.resp)}</dd>`:''}${e.ass?`<dt>Ассессмент</dt><dd>${esc(e.ass)}</dd>`:''}${e.desc?`<dt>Описание</dt><dd>${esc(e.desc)}</dd>`:''}</dl>`;
+      info.querySelector('.xclose').onclick=()=>{info.hidden=true}})};
+  host.querySelectorAll('select').forEach(s=>s.onchange=()=>{f[s.dataset.f]=s.value;draw()});
+  draw();
+}
+function xlRender(st,wb){
+  const meta=(wb.Workbook&&wb.Workbook.Sheets)||[];
+  const cal=xlEvents(wb), views=[];
+  if(cal) views.push({n:'Календарь',cal:true});
+  wb.SheetNames.forEach((s,i)=>{if(meta[i]&&meta[i].Hidden)return; if(cal&&/календар/i.test(s))return; views.push({n:s})});
+  st.innerHTML=`<div class="fsxl"><div class="fstabs">${views.map((v,i)=>`<button class="${i?'':'on'}" data-s="${i}">${esc(v.n)}</button>`).join('')}</div><div class="fssheet"></div></div>`;
+  const box=st.querySelector('.fssheet');
+  const show=i=>{const v=views[i]; box.classList.toggle('cal',!!v.cal);
+    if(v.cal) xlCalendarView(box,cal); else box.innerHTML=xlSheetHtml(wb.Sheets[v.n]);
+    box.scrollTop=0; st.querySelectorAll('.fstabs button').forEach(b=>b.classList.toggle('on',+b.dataset.s===i))};
+  st.querySelectorAll('.fstabs button').forEach(b=>b.onclick=()=>show(+b.dataset.s));
+  if(views.length<2) st.querySelector('.fstabs').remove();
+  show(0);
+}
+
 function pdfPager(doc,cv,opts){
   const N=doc.numPages, cache=new Map(), dpr=Math.min(window.devicePixelRatio||1,2);
   let chain=Promise.resolve(), want=1, page=1;
@@ -694,13 +837,7 @@ async function openFull(f,url,startPage){
         await window.docx.renderAsync(buf,st.firstChild,null,{inWrapper:true,breakPages:true,ignoreLastRenderedPageBreak:true});
       }else{
         await loadScript(['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'],()=>window.XLSX);
-        const wb=XLSX.read(buf,{type:'array',cellDates:true});
-        st.innerHTML=`<div class="fsxl"><div class="fstabs">${wb.SheetNames.map((s,i)=>`<button class="${i?'':'on'}" data-s="${i}">${esc(s)}</button>`).join('')}</div><div class="fssheet"></div></div>`;
-        const show=i=>{st.querySelector('.fssheet').innerHTML=XLSX.utils.sheet_to_html(wb.Sheets[wb.SheetNames[i]],{header:'',footer:''});
-          st.querySelectorAll('.fstabs button').forEach(b=>b.classList.toggle('on',+b.dataset.s===i))};
-        st.querySelectorAll('.fstabs button').forEach(b=>b.onclick=()=>show(+b.dataset.s));
-        if(wb.SheetNames.length<2) st.querySelector('.fstabs').remove();
-        show(0);
+        xlRender(st,XLSX.read(buf,{type:'array',cellDates:true,cellStyles:true}));
       }
     }catch(e){st.innerHTML=`<p class="fsmsg">Не удалось показать документ: ${esc(e.message)}. Нажмите «Скачать».</p>`}
     return;
