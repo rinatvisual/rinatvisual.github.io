@@ -794,7 +794,7 @@ $('#lform').onsubmit=async e=>{
 };
 (async()=>{const k=ss.get('strat.k'),u=ss.get('strat.u');if(k&&u){try{await openApp(ub64(k),u)}catch(e){ss.del('strat.k')}}})();
 </script>
-<script src="lead.js?v=20261112f"></script>
+<script src="lead.js?v=20261112g"></script>
 <script>
 // переключатель темы
 document.querySelectorAll('.thm').forEach(b=>b.onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('strat.theme',r.dataset.theme)}catch(e){}});

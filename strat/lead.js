@@ -759,6 +759,12 @@ function loadScript(urls,ready){
 const XLPAL={'Голубой':'A9C6F5','Сиреневато-розовый':'E6BCD6','Зелёный':'B5D9AE','Оранжевый':'F7CA9D','Светло-жёлтый':'FFF1C9','Серый':'D9DDE2','Синий':'8FB4E6','Бирюзовый':'A8DED9','Персиковый':'F9DBC4','Лавандовый':'D0C7F0','Розовый':'F3C9D4','Светло-зелёный':'C7E6C2','Мятный':'B9E9D6','Лимонный':'FFF2A6','Коралловый':'F2ADA0','Лиловый':'DBC8ED','Салатовый':'D5EBAE','Кремовый':'F5E5C3','Стальной':'AFBED1','Песочный':'ECD5A7','Аквамарин':'A6E0DA','Небесный':'B9D8FA','Пурпурный':'E4B6E6','Хвойный':'AACDB7','Сизый':'BEC7DD','Фисташковый':'D9E5C7','Орхидея':'DEABD7','Морская пена':'C1DAD6','Льняной':'E3D7CA','Аметистовый':'B9AFDA','Яблочный':'BAE3B8','Пудровый':'E0CCD3','Сизо-голубой':'B2C9D7','Оливковый':'DDE0BB','Глициния':'E0C5E8','Шалфейный':'B6D3C4','Пыльная роза':'DDC4BE','Барвинковый':'C7CAE5','Лаймовый':'BEDEAB','Пыльно-сиреневый':'DAC1D1','Ледяной':'CAE2E3','Соломенный':'DACFAF','Вересковый':'CBB8E3','Эвкалиптовый':'CCE0CF','Пепельно-розовый':'D7B2B7','Джинсовый':'BBCAE0','Сельдерейный':'DEE8C5','Мальвовый':'D3B6D3','Нефритовый':'BEDDD4','Миндальный':'E5D4C7'};
 // тёмная заливка → белый текст
 const xlDark=h=>{const n=parseInt(h,16);return ((n>>16&255)*299+(n>>8&255)*587+(n&255)*114)/1000<140};
+// группы мероприятий календаря: у каждой свой цвет, конкретное мероприятие — в карточке
+const XLGR=[['ОЭ','Очный этап','8FB4E6'],['ЛП','100 Лидеров','FFE08A'],['Прогрев.Онлайн','','F3B6CF'],['Прогрев.Оффлайн','','C9B6F2'],['Форум','','9FDCB0'],['Проф','Профориентация','F5A894'],['ДОД','День открытых дверей','F7C98F'],['Партнеры','','C7CDD6']];
+const xlGroup=(code,name)=>{const c=String(code||'').trim(),n=String(name||'').toLowerCase();
+  if(c==='ОЭ'||n==='очный этап')return 0; if(c==='ЛП'||n==='100 лидеров')return 1; if(c==='ВБ'||n==='вебинар')return 2;
+  if(['СОД','ЛН','КК'].includes(c)||/студент на один день|лагерь навыков|конкурс компетенций/.test(n))return 3;
+  if(c==='Форум'||n==='форум')return 4; if(c==='Проф'||n==='профориентация')return 5; if(c==='ДОД'||/день открытых дверей/.test(n))return 6; return 7};
 const XLMON=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const xlDay=v=>{if(!(v instanceof Date)||isNaN(v))return null;const d=new Date(v.getTime()+12*3600e3);return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
 const xlKey=d=>d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
@@ -786,6 +792,7 @@ function xlSheetHtml(ws){
       if(hidC(c)||cover.has(r+':'+c))continue;
       const cell=ws[XLSX.utils.encode_cell({r,c})], sp=span[r+':'+c];
       let txt=cell?(cell.w!=null?cell.w:(cell.v instanceof Date?cell.v.toLocaleDateString('ru-RU'):cell.v)):'';
+      if(cell&&cell.t==='n'&&typeof cell.v==='number'&&/\.\d{5,}/.test(String(txt))) txt=String(Math.round(cell.v*100)/100).replace('.',',');
       if(txt==null)txt='';
       const fill=cell&&cell.s&&cell.s.fgColor&&cell.s.fgColor.rgb&&cell.s.patternType==='solid'?cell.s.fgColor.rgb.slice(-6):'';
       const num=cell&&(cell.t==='n'||cell.t==='d');
@@ -808,14 +815,16 @@ function xlEvents(wb){
     for(const row of a.slice(1)){
       const s=xlDay(row[iS]); if(!s) continue;
       const e=xlDay(g(row,'Дата окончания'))||s;
-      ev.push({s,e:e<s?s:e,name:String(row[iN]||''),code:String(g(row,'Код мероприятия')||row[iN]||''),proj:g(row,'Проект')||'',fmt:g(row,'Формат мероприятия')||'',ass:g(row,'Ассессмент')||'',desc:g(row,'Описание')||'',n:g(row,'Кол-во участников'),resp:g(row,'Ответственный')||'',col:XLPAL[g(row,'Цвет мероприятия')]||'D9DDE2'});
+      const nRaw=g(row,'Кол-во участников'), n=typeof nRaw==='number'?Math.round(nRaw):(nRaw&&!isNaN(+nRaw)?Math.round(+nRaw):nRaw);  // люди — только целые
+      const gi=xlGroup(g(row,'Код мероприятия'),row[iN]), G=XLGR[gi];
+      ev.push({s,e:e<s?s:e,name:String(row[iN]||''),grp:G[0],gfull:G[1]?`${G[0]} — ${G[1]}`:G[0],code:G[0],proj:g(row,'Проект')||'',fmt:g(row,'Формат мероприятия')||'',ass:g(row,'Ассессмент')||'',desc:g(row,'Описание')||'',n,resp:g(row,'Ответственный')||'',col:G[2]});
     }
     if(ev.length) return {sheet:name,ev};
   }
   return null;
 }
 function xlCalendarHtml(cal,f){
-  const ev=cal.ev.filter(e=>(!f.proj||e.proj===f.proj)&&(!f.resp||e.resp===f.resp)&&(!f.name||e.name===f.name));
+  const ev=cal.ev.filter(e=>(!f.proj||e.proj===f.proj)&&(!f.resp||e.resp===f.resp)&&(!f.grp||e.grp===f.grp));
   const byDay={}; ev.forEach((e,i)=>{for(let d=new Date(e.s);d<=e.e;d.setDate(d.getDate()+1))(byDay[xlKey(d)]=byDay[xlKey(d)]||[]).push(i)});
   const all=cal.ev, min=new Date(Math.min(...all.map(e=>e.s))), max=new Date(Math.max(...all.map(e=>e.e)));
   const today=xlKey(new Date());
@@ -827,7 +836,7 @@ function xlCalendarHtml(cal,f){
     for(let i=0;i<first;i++)h+='<div class="xd off"></div>';
     for(let d=1;d<=dim;d++){
       const k=y*10000+(mo+1)*100+d, list=byDay[k]||[], we=(first+d-1)%7>4;
-      h+=`<div class="xd${we?' we':''}${k===today?' td':''}"><span class="xn">${d}</span>${list.map(i=>{const e=ev[i];return `<button class="xe" style="background:#${e.col}" data-e="${i}" title="${esc(e.name)}${e.n?' · '+e.n+' участн.':''}${e.resp?' · '+esc(e.resp):''}">${esc(e.code)}${e.n?` <b>${e.n}</b>`:''}</button>`}).join('')}</div>`;
+      h+=`<div class="xd${we?' we':''}${k===today?' td':''}"><span class="xn">${d}</span>${list.map(i=>{const e=ev[i];return `<button class="xe" style="background:#${e.col}" data-e="${i}" title="${esc(e.grp)} · ${esc(e.name)}${e.n?' · '+e.n+' участн.':''}${e.resp?' · '+esc(e.resp):''}">${esc(e.code)}${e.n?` <b>${e.n}</b>`:''}</button>`}).join('')}</div>`;
     }
     h+='</div></section>';
   }
@@ -836,15 +845,15 @@ function xlCalendarHtml(cal,f){
 function xlCalendarView(host,cal){
   const uniq=k=>[...new Set(cal.ev.map(e=>e[k]).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'ru'));
   const sel=(k,lbl)=>`<label>${lbl}<select data-f="${k}"><option value="">Все</option>${uniq(k).map(v=>`<option>${esc(v)}</option>`).join('')}</select></label>`;
-  const types=[...new Map(cal.ev.map(e=>[e.name,e])).values()];
-  host.innerHTML=`<div class="xcal"><div class="xbar">${sel('proj','Проект')}${sel('name','Мероприятие')}${sel('resp','Ответственный')}</div>
-    <div class="xleg">${types.map(e=>`<span><i style="background:#${e.col}"></i>${esc(e.code)} — ${esc(e.name)}</span>`).join('')}</div>
+  const used=new Set(cal.ev.map(e=>e.grp)), types=XLGR.filter(g=>used.has(g[0]));
+  host.innerHTML=`<div class="xcal"><div class="xbar">${sel('proj','Проект')}<label>Группа<select data-f="grp"><option value="">Все</option>${types.map(g=>`<option>${esc(g[0])}</option>`).join('')}</select></label>${sel('resp','Ответственный')}</div>
+    <div class="xleg">${types.map(g=>`<span><i style="background:#${g[2]}"></i>${esc(g[1]?g[0]+' — '+g[1]:g[0])}</span>`).join('')}</div>
     <div class="xinfo" hidden></div><div class="xmonths"></div></div>`;
   const f={}, info=host.querySelector('.xinfo');
   const draw=()=>{const r=xlCalendarHtml(cal,f);host.querySelector('.xmonths').innerHTML=r.html;
     host.querySelectorAll('.xe').forEach(b=>b.onclick=()=>{const e=r.ev[+b.dataset.e],dt=d=>d.toLocaleDateString('ru-RU');
-      info.hidden=false;info.innerHTML=`<button class="xclose" aria-label="Закрыть">✕</button><b><i style="background:#${e.col}"></i>${esc(e.name)}</b>
-        <dl><dt>Даты</dt><dd>${dt(e.s)}${+e.e!==+e.s?' — '+dt(e.e):''}</dd>${e.proj?`<dt>Проект</dt><dd>${esc(e.proj)}</dd>`:''}${e.fmt?`<dt>Формат</dt><dd>${esc(e.fmt)}</dd>`:''}${e.n?`<dt>Участников</dt><dd>${esc(e.n)}</dd>`:''}${e.resp?`<dt>Ответственный</dt><dd>${esc(e.resp)}</dd>`:''}${e.ass?`<dt>Ассессмент</dt><dd>${esc(e.ass)}</dd>`:''}${e.desc?`<dt>Описание</dt><dd>${esc(e.desc)}</dd>`:''}</dl>`;
+      info.hidden=false;info.innerHTML=`<button class="xclose" aria-label="Закрыть">✕</button><b><i style="background:#${e.col}"></i>${esc(e.gfull)}</b>
+        <dl><dt>Мероприятие</dt><dd>${esc(e.name)}</dd><dt>Даты</dt><dd>${dt(e.s)}${+e.e!==+e.s?' — '+dt(e.e):''}</dd>${e.proj?`<dt>Проект</dt><dd>${esc(e.proj)}</dd>`:''}${e.fmt?`<dt>Формат</dt><dd>${esc(e.fmt)}</dd>`:''}${e.n?`<dt>Участников</dt><dd>${esc(e.n)}</dd>`:''}${e.resp?`<dt>Ответственный</dt><dd>${esc(e.resp)}</dd>`:''}${e.ass?`<dt>Ассессмент</dt><dd>${esc(e.ass)}</dd>`:''}${e.desc?`<dt>Описание</dt><dd>${esc(e.desc)}</dd>`:''}</dl>`;
       info.querySelector('.xclose').onclick=()=>{info.hidden=true}})};
   host.querySelectorAll('select').forEach(s=>s.onchange=()=>{f[s.dataset.f]=s.value;draw()});
   draw();
