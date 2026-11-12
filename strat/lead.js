@@ -635,7 +635,7 @@ function srcBlock(side){
   const r=srcRows(side), pc=s=>Math.round(s*100)+'%';
   const total=side==='center'?LEAD.funnel[0].num:LEAD.funnelSides[side][0];
   const cell=([n,v,s],cls)=>`<div class="srcc ${cls}"><small>${esc(n)}</small><b>${fmtN(v)}</b><span>${pc(s)}</span></div>`;
-  return `<div class="srcw ${side}"><div class="srct">Заявки · ${esc(total)} <span style="font-weight:400;opacity:.75">(доли — на основе статистики за прошлый год)</span></div><div class="srcg">${cell(r[0],'a')}<div class="srcr">${cell(r[1],'b')}${cell(r[2],'c')}</div></div></div>`;
+  return `<div class="srcw ${side}"><div class="srct">Заявки · ${esc(total)}</div><div class="srcg">${cell(r[0],'a')}<div class="srcr">${cell(r[1],'b')}${cell(r[2],'c')}</div></div></div>`;
 }
 function openSources(side){ showPanel('Откуда заявки',srcBlock(side),()=>{}); }
 function openStage(i){
