@@ -139,6 +139,10 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .fst.last small,.fst.last b{color:var(--on-accent)}
 .fcv{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--accent);padding:4px 0}
 .lboxes{gap:12px}
+.mdedit label{display:block;font-family:var(--fm);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
+.mdedit label small{text-transform:none;letter-spacing:0;color:var(--muted);font-family:var(--fb);font-weight:500}
+.mdedit textarea{display:block;width:100%;margin-top:4px;font:14px/1.45 var(--fb);text-transform:none;letter-spacing:0;color:var(--ink);resize:vertical}
+.mdedit .row{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .funnels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;margin-top:16px}
 .funnels .funnel{width:100%}
 .fcol{min-width:0}
@@ -266,7 +270,8 @@ async function loadLead(){
   const r=await fetch('lead.enc.json',{cache:'no-store'}); const j=await r.json();
   LEAD=JSON.parse(dec.decode(await aesDec(KEY,j.iv,j.ct))); return LEAD;
 }
-const M=id=>LEAD.modules[id];
+// правки цели / формата / переходов хранятся зашифрованно рядом с метриками (MT['md:id'])
+const M=id=>{const b=LEAD.modules[id],o=MT['md:'+id];if(!b||!o)return b;try{return {...b,...JSON.parse(o.t)}}catch(e){return b}};
 let VAR=+(ls.get('strat.var')||1);
 const outs=id=>id==='az'?[VAR===1?`→ М1: лиды (${(LEAD.variants&&LEAD.variants[1])||''})`:'→ М3: лиды (напрямую в ОП)']:M(id).out;
 const mName=id=>id==='tu'?'«Трудоустроен в ГК Алабуга»':`${M(id).short} · ${M(id).name}`;
@@ -319,7 +324,7 @@ window.renderLead=async function(){
   box.innerHTML=`
   <section class="panel lsec">
     <h2>Модули и руководители</h2><p class="sub">Нажмите на модуль, чтобы открыть цели, регламенты и документы отдела.</p>
-    <div class="mchips">${['m7','m1','m2','m34','m6','m8','m5'].map(id=>{const m=M(id),own=id==='m1'?`${M('az').owner} · PR`:`${m.owner} · ${m.dept}`;
+    <div class="mchips">${['m7','m1','m2','m34','m6','m8','m5'].map(id=>{const m=M(id),own=`${m.owner} · ${m.dept}`;
       return `<button class="mchip" data-mod="${id}"><span class="mn">${esc(m.num)}</span><b>${esc(m.name)}</b><strong>${esc(own)}</strong><small>${esc(m.desc||'')}</small></button>`}).join('')}</div>
   </section>
   <section class="panel lsec">
@@ -444,17 +449,30 @@ function bindFiles(reopen){
 }
 
 function openModule(id){
-  const m=M(id);
+  const m=M(id), trs=m.trans!=null?String(m.trans).split('\n').filter(Boolean):outs(id);
   const html=`<div class="ls">
     <div class="it"><div class="hd">${esc(m.num)} · ${esc(m.name)}</div><div class="mt">${esc(m.owner)} · ${esc(m.dept)}</div><p>${esc(m.desc)}</p></div>
     <h5>Путь лида — ${esc(m.card)}</h5>
     ${imgBlock('img:'+id)}
-    <div class="it"><dl class="meta">${m.goal?`<dt>Цель</dt><dd>${esc(m.goal)}</dd>`:''}${m.format?`<dt>Формат</dt><dd>${esc(m.format)}</dd>`:''}${outs(id).length?`<dt>Переходы</dt><dd>${outs(id).map(esc).join('<br>')}</dd>`:''}</dl></div>
+    <div class="it mdedit"><dl class="meta" id="mdview">${m.goal?`<dt>Цель</dt><dd>${esc(m.goal)}</dd>`:''}${m.format?`<dt>Формат</dt><dd>${esc(m.format)}</dd>`:''}${trs.length?`<dt>Переходы</dt><dd>${trs.map(esc).join('<br>')}</dd>`:''}</dl>
+      <div id="mdform" style="display:none"><label>Цель<textarea id="mdgoal" rows="2">${esc(m.goal||'')}</textarea></label><label>Формат<textarea id="mdfmt" rows="2">${esc(m.format||'')}</textarea></label><label>Переходы <small>(каждый с новой строки)</small><textarea id="mdtr" rows="3">${esc(trs.join('\n'))}</textarea></label></div>
+      <div class="row"><button class="btn ghost" id="mded">Редактировать</button><button class="btn" id="mdsave" style="display:none">Сохранить</button><button class="btn ghost" id="mdcancel" style="display:none">Отмена</button><span class="upst" id="mdst"></span></div></div>
     ${filesBlock('mod:'+id,'Документы отдела','Документов пока нет — загрузите положение, регламент или другой файл отдела.')}
   </div>`;
   showPanel(`${m.short} · ${m.name}`,html,()=>{
     bindFiles(()=>openModule(id));
     bindImg('img:'+id,()=>openModule(id));
+    const sh=(s,v)=>{$(s).style.display=v?'':'none'};
+    const mode=on=>{sh('#mdview',!on);sh('#mdform',on);sh('#mded',!on);sh('#mdsave',on);sh('#mdcancel',on);if(on)$('#mdgoal').focus()};
+    mode(false);
+    $('#mded').onclick=()=>mode(true);
+    $('#mdcancel').onclick=()=>openModule(id);
+    $('#mdsave').onclick=async()=>{
+      MT['md:'+id]={t:JSON.stringify({goal:$('#mdgoal').value.trim(),format:$('#mdfmt').value.trim(),trans:$('#mdtr').value.trim()}),a:USER,ts:Date.now()};
+      $('#mdst').textContent='Сохраняю…';await persist();
+      try{await window.renderLead()}catch(e){}
+      openModule(id);$('#mdst').textContent=syncOn()?'Сохранено и отправлено':'Сохранено в этом браузере';
+    };
   });
 }
 
