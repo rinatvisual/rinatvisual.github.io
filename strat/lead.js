@@ -67,6 +67,7 @@ const css=`
 .fml{margin:0 0 14px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;background:var(--soft)}
 .fml .fedit{float:right;padding:2px 10px;font-size:12px}
 .fml .fin{width:100%;box-sizing:border-box;margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.pnote{margin:0 0 12px;font-size:13px;font-weight:600;color:var(--muted)}
 .fml .muted{color:var(--muted)}
 .fml h5{margin:0 0 6px!important;font-size:13px;color:var(--muted)}
 .fml b{display:block;font-size:15px;margin-bottom:4px}
@@ -575,11 +576,12 @@ function bindFml(x,reopen){
     $('#fs').onclick=async()=>{MT['fm:'+k]={t:JSON.stringify({h:$('#fh').value.trim(),t:$('#ft').value.trim()}),a:USER,ts:Date.now()};$('#fst').textContent='Сохраняю…';await persist();reopen()};
   };
 }
+const PNOTE='<p class="pnote">(Проценты — на основе статистики за прошлый год)</p>';
 const calcPic=x=>{const c=x&&x.calc;if(!c)return '';let r=false;return `<div class="calc">${c.map(t=>{if(typeof t==='string'){if(t==='=')r=true;return `<span class="co">${esc(t)}</span>`}return `<div class="ct${r?' res':''}"><b>${esc(t[0])}</b><small>${esc(t[1])}</small></div>`}).join('')}</div>`};
 function openNum(eid){const i=LEAD.funnel.findIndex(f=>f.edge===eid);if(i>=0)return openStage(i);openCalcEdge(eid)}
 function openCalcEdge(eid){
   const e=LEAD.edges.find(x=>x.id===eid);
-  showPanel(e.label.replace(/^→\s*М\d\S*:\s*/,'').replace(/[«»]/g,''),`<div class="ls">${calcPic(e)}${fmlBlock(e,e.id)}<div class="it"><div class="hd">${esc(e.label)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(e.num)}</p></div><div class="row"><button class="btn ghost" data-edge="${e.id}">Регламент взаимодействия →</button></div></div>`,()=>{
+  showPanel(e.label.replace(/^→\s*М\d\S*:\s*/,'').replace(/[«»]/g,''),`${PNOTE}<div class="ls">${calcPic(e)}${fmlBlock(e,e.id)}<div class="it"><div class="hd">${esc(e.label)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(e.num)}</p></div><div class="row"><button class="btn ghost" data-edge="${e.id}">Регламент взаимодействия →</button></div></div>`,()=>{
     $('#dbody').querySelectorAll('[data-edge]').forEach(x=>x.onclick=()=>openEdge(x.dataset.edge));
     bindFml(e,()=>openCalcEdge(eid));
   });
@@ -639,7 +641,7 @@ function openSources(side){ showPanel('Откуда заявки',srcBlock(side)
 function openStage(i){
   const f=LEAD.funnel[i], prev=LEAD.funnel[i-1];
   const c=f.concept&&LEAD.concepts.find(x=>x.name===f.concept), e=f.edge&&LEAD.edges.find(x=>x.id===f.edge);
-  const html=(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls">${calcPic(f.calc?f:e)}${fmlBlock(f.formula?f:e,f.edge||'st'+i)}<div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
+  const html=PNOTE+(i===0&&LEAD.funnelSrc?srcBlock('center'):'')+`<div class="ls">${calcPic(f.calc?f:e)}${fmlBlock(f.formula?f:e,f.edge||'st'+i)}<div class="it"><div class="hd">${esc(f.name)}</div><p style="font-size:22px;font-weight:700;margin:4px 0">${esc(f.num)}</p>
     <div class="mt">${prev?`Из этапа «${esc(prev.name)}»: ${esc(prev.next)}`:'Первый этап воронки'}${f.next?` · дальше: ${esc(f.next)}`:''}</div></div>
     ${e?`<h5>На схеме</h5><div class="it task" data-edge="${e.id}"><span>${esc(mName(e.from))} → ${esc(mName(e.to))} · ${esc(e.num)}</span><span class="dd">регламент →</span></div>`:''}
     ${c?`<div class="row"><button class="btn ghost" data-go="${c.owner}">Открыть ${esc(M(c.owner).short)} · ${esc(M(c.owner).name)}</button></div>`:''}</div>`;
