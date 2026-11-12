@@ -141,6 +141,10 @@ details.more summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-we
 .lboxes{gap:12px}
 .funnels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;margin-top:16px}
 .funnels .funnel{width:100%}
+.fcol{min-width:0}
+.ftitle{margin:0 0 10px;text-align:center;font-size:16px;font-weight:700;color:var(--ink)}
+.ftitle:empty{display:none}
+.fcol.left .ftitle{color:#16a34a}.fcol.right .ftitle{color:#dc2626}.fcol.center .ftitle{color:var(--accent)}
 .funnel.side .fst{cursor:default}
 .funnel.side .fst.src{cursor:pointer}.funnel.side .fst.src:hover{border-color:var(--accent)}
 .srcw{margin-bottom:14px}
@@ -326,7 +330,7 @@ window.renderLead=async function(){
   <section class="panel lsec">
     <h2>Воронка 26/27</h2><p class="sub">Нажмите на этап, чтобы перейти к связанной стрелке или отделу.</p>
     <div class="lboxes"><div class="lbox2"><b>${esc(LEAD.loop.title)}</b>${esc(LEAD.loop.text)}</div><div class="lbox2"><b>${esc(LEAD.chat.title)}</b>${esc(LEAD.chat.text)}</div></div>
-    <div class="funnels">${funnelCol('left')}<div class="funnel">${LEAD.funnel.map((f,i)=>`<button class="fst ${i===LEAD.funnel.length-1?'last':''}" data-f="${i}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(f.num)}</b></button>${f.next?`<div class="fcv">↓ ${esc(f.next)}</div>`:''}`).join('')}</div>${funnelCol('right')}</div>
+    <div class="funnels">${fTitle('center')}<div class="funnel">${LEAD.funnel.map((f,i)=>`<button class="fst ${i===LEAD.funnel.length-1?'last':''}" data-f="${i}" style="width:${100-i*5}%"><small>${esc(f.name)}</small><b>${esc(f.num)}</b></button>${f.next?`<div class="fcv">↓ ${esc(f.next)}</div>`:''}`).join('')}</div></div>${fTitle('left')}${funnelCol('left')}</div>${fTitle('right')}${funnelCol('right')}</div></div>
   </section>`;
   box.querySelectorAll('[data-mod]').forEach(el=>{el.onclick=()=>openModule(el.dataset.mod);el.onkeydown=e=>{if(e.key==='Enter'&&!e.target.classList.contains('kwbtn'))openModule(el.dataset.mod)}});
   box.querySelectorAll('.kwbtn').forEach(btn=>{btn.onclick=e=>{e.stopPropagation();openKeyword(btn.dataset.kw)}});
@@ -486,6 +490,8 @@ function openEdge(eid){
 }
 
 // боковые воронки: слева — зелёные цифры, справа — красные; конверсия считается из самих чисел
+// колонка воронки с подписью сверху (подписи — в зашифрованных данных)
+const fTitle=side=>`<div class="fcol ${side}"><h3 class="ftitle">${esc((LEAD.funnelTitles&&LEAD.funnelTitles[side])||'')}</h3>`;
 function funnelCol(side){
   const nums=(LEAD.funnelSides&&LEAD.funnelSides[side])||[]; if(!nums.length) return '';
   const val=s=>+String(s).replace(/\D/g,'');
