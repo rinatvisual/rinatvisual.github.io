@@ -703,6 +703,17 @@ async function ghPut(path,obj){
 }
 function st(t,c){const e=$('#syncst');e.textContent=t;e.className='sync '+(c||'')}
 // старый ник rinatvisual → новый репозиторий xolchade/substance
+// запасной путь к GitHub API через Cloudflare Worker на своём домене (xolchade.dev/gh/…), если api.github.com недоступен из сети
+(()=>{const F=window.fetch.bind(window),D='https://api.github.com/',P=location.origin+'/gh/',can=!/github\.io$/.test(location.hostname)&&location.protocol==='https:';
+  let via=null;try{via=sessionStorage.getItem('strat.ghvia')}catch(e){}
+  window.fetch=async(u,o)=>{
+    if(typeof u!=='string'||!u.startsWith(D)||!can) return F(u,o);
+    if(via) return F(P+u.slice(D.length),o);
+    const c=new AbortController(),t=setTimeout(()=>c.abort(),8000);
+    try{const r=await F(u,{...(o||{}),signal:c.signal});clearTimeout(t);return r}
+    catch(e){clearTimeout(t);via='1';try{sessionStorage.setItem('strat.ghvia','1')}catch(_){}return F(P+u.slice(D.length),o)}
+  };
+})();
 const repoOf=r=>/^rinatvisual\//i.test(r||'')?'xolchade/substance':r;
 const api=p=>`https://api.github.com/repos/${repoOf(SYNC.repo)}/contents/${p}`;
 async function ghGet(){
